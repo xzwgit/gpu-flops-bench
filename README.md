@@ -10,6 +10,7 @@
 gpu-flops-bench/
 ├── README.md                          # 本文件（统一对比）
 ├── LICENSE                            # MIT
+├── run_bench.sh                       # ⭐ 统一入口（自动检测 GPU 厂商）
 ├── nvidia/                            # NVIDIA CUDA 版 (cuBLASLt)
 │   ├── src/gpu_dense_bench.cu         # 主程序 (C++17, 自给自足, 无需 Python)
 │   ├── run_gpu_flops.sh / .bat        # 一键编译+运行
@@ -62,7 +63,22 @@ gpu-flops-bench/
 
 ## 运行方式
 
-### NVIDIA
+### 统一入口（推荐）
+
+```bash
+bash run_bench.sh               # 自动检测 GPU 厂商并运行
+bash run_bench.sh --quick       # 快速模式
+bash run_bench.sh --device 0    # 只测 GPU 0
+```
+
+自动检测 GPU 类型（NVIDIA / AMD），调用对应子工具：
+
+| 检测到 | 调用 | 编译器 | BLAS 库 |
+|---|---|---|---|
+| NVIDIA | `nvidia/run_gpu_flops.sh` | nvcc | cuBLASLt |
+| AMD | `amd/run_gpu_flops.sh` (待实现) | hipcc | hipBLASLt |
+
+### NVIDIA（单独运行）
 
 ```bash
 cd nvidia
@@ -72,9 +88,12 @@ bash run_gpu_flops.sh --quick   # 快速模式（每精度只测一个尺寸）
 
 无需安装 Python。编译时链接 NVML（`-lnvidia-ml`，CUDA Toolkit 自带）。
 
-### AMD
+### AMD（待实现）
 
-待实现。
+```bash
+cd amd
+bash run_gpu_flops.sh           # 待实现
+```
 
 ## 测新 GPU 后的操作步骤
 
