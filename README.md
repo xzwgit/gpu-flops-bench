@@ -26,18 +26,14 @@ gpu-flops-bench/
 
 ### NVIDIA（6 款，按算力从高到低排序）
 
-| 精度 | H200 NVL (Hopper, 141GB) | PRO 6000 (Blackwell, 96GB) | RTX 5090 (Blackwell, 32GB) | PRO 5000 (Blackwell, 48GB) | 5090 D v2 (Blackwell, 24GB) | RTX 4090 (Ada, 24GB) |
-|---|---|---|---|---|---|---|
-| FP64 | 58.98 | 1.54 | 1.77 | 1.01 | 1.68 | 1.25 |
-| FP32 | 47.28 | 83.60 | 83.24 | 52.41 | 83.70 | 57.55 |
-| TF32 | 425.55 | 224.70 | 125.80 | 140.27 | 119.34 | 90.35 |
-| BF16 | 853.29 | 457.61 | 254.03 | 257.12 | 240.72 | 179.20 |
-| FP16 | 853.68 | 457.44 | 254.21 | 260.25 | 240.66 | 179.20 |
-| INT8 | 1629.76 | 845.39 | 906.14 | 551.88 | 665.27 | 676.00 |
-| FP8 E4M3 | 1660.83 | 905.32 | 773.52 | 557.34 | 660.66 | 354.31 |
-| FP8 E5M2 | UNSUPPORTED | UNSUPPORTED | UNSUPPORTED | UNSUPPORTED | UNSUPPORTED | UNSUPPORTED |
-| NVFP4 | UNSUPPORTED | 1608.21 | 1617.46 | 1063.53 | 1177.03 | UNSUPPORTED |
-| INT4 | UNSUPPORTED | UNSUPPORTED | UNSUPPORTED | UNSUPPORTED | UNSUPPORTED | UNSUPPORTED |
+| GPU | 架构 | CC | 显存 | FP64 | FP32 | TF32 | BF16 | FP16 | INT8 | FP8 E4M3 | FP8 E5M2 | NVFP4 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| H200 NVL | Hopper | 9.0 | 141 GB | 58.98 | 47.28 | 425.55 | 853.29 | 853.68 | 1629.76 | 1660.83 | UNSUPPORTED | UNSUPPORTED |
+| RTX PRO 6000 | Blackwell | 12.0 | 96 GB | 1.54 | 83.60 | 224.70 | 457.61 | 457.44 | 845.39 | 905.32 | UNSUPPORTED | 1608.21 |
+| RTX 5090 | Blackwell | 12.0 | 32 GB | 1.77 | 83.24 | 125.80 | 254.03 | 254.21 | 906.14 | 773.52 | UNSUPPORTED | 1617.46 |
+| RTX PRO 5000 | Blackwell | 12.0 | 48 GB | 1.01 | 52.41 | 140.27 | 257.12 | 260.25 | 551.88 | 557.34 | UNSUPPORTED | 1063.53 |
+| RTX 5090 D v2 | Blackwell | 12.0 | 24 GB | 1.68 | 83.70 | 119.34 | 240.72 | 240.66 | 665.27 | 660.66 | UNSUPPORTED | 1177.03 |
+| RTX 4090 | Ada Lovelace | 8.9 | 24 GB | 1.25 | 57.55 | 90.35 | 179.20 | 179.20 | 676.00 | 354.31 | UNSUPPORTED | UNSUPPORTED |
 
 > 单位: TFLOPS（INT8 为 TOPS）
 > 数据为 cuBLASLt dense GEMM 实测值（非稀疏，isolated 隔离测试，取各精度最佳尺寸中位数）
