@@ -26,6 +26,8 @@ gpu-flops-bench/
 
 ### NVIDIA（8 款，按算力从高到低排序）
 
+<sub>
+
 | GPU | 架构 | CC | 显存 | FP64 | FP32 | TF32 | BF16 | FP16 | INT8 | FP8 E4M3 | NVFP4 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | H200 NVL | Hopper | 9.0 | 141 GB | 58.98 | 47.28 | 425.55 | 853.29 | 853.68 | 1629.76 | 1660.83 | UNSUPPORTED |
@@ -36,6 +38,8 @@ gpu-flops-bench/
 | RTX 6000D | Blackwell | 12.0 | 84 GB | 1.32 | 67.52 | 72.26 | 150.53 | 150.03 | 391.06 | 287.89 | 946.03 |
 | RTX 4090 | Ada Lovelace | 8.9 | 24 GB | 1.25 | 57.55 | 90.35 | 179.20 | 179.20 | 676.00 | 354.31 | UNSUPPORTED |
 | GB10 (DGX Spark) | Grace Blackwell | 12.1 | 128 GB* | 0.40 | 21.24 | 42.62 | 101.98 | 105.08 | 155.47 | 219.83 | 372.54 |
+
+</sub>
 
 > 单位: TFLOPS（INT8 为 TOPS）
 > 数据为 cuBLASLt dense GEMM 实测值（非稀疏，isolated 隔离测试，取各精度最佳尺寸中位数）
