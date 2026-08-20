@@ -26,16 +26,16 @@ gpu-flops-bench/
 
 ### NVIDIA（8 款，按算力从高到低排序）
 
-| GPU | 架构 | CC | 显存 | FP64 | FP32 | TF32 | BF16 | FP16 | INT8 | E4M3 | NVFP4 |
+| <small>GPU</small> | <small>架构</small> | <small>CC</small> | <small>显存</small> | <small>FP64</small> | <small>FP32</small> | <small>TF32</small> | <small>BF16</small> | <small>FP16</small> | <small>INT8</small> | <small>E4M3</small> | <small>NVFP4</small> |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| <sub>H200 NVL</sub> | <sub>Hopper</sub> | <sub>9.0</sub> | <sub>141G</sub> | <sub>59.0</sub> | <sub>47.3</sub> | <sub>426</sub> | <sub>853</sub> | <sub>854</sub> | <sub>1630</sub> | <sub>1661</sub> | <sub>—</sub> |
-| <sub>PRO 6000</sub> | <sub>Blackwell</sub> | <sub>12.0</sub> | <sub>96G</sub> | <sub>1.5</sub> | <sub>83.6</sub> | <sub>225</sub> | <sub>458</sub> | <sub>457</sub> | <sub>845</sub> | <sub>905</sub> | <sub>1608</sub> |
-| <sub>5090</sub> | <sub>Blackwell</sub> | <sub>12.0</sub> | <sub>32G</sub> | <sub>1.8</sub> | <sub>83.2</sub> | <sub>126</sub> | <sub>254</sub> | <sub>254</sub> | <sub>906</sub> | <sub>774</sub> | <sub>1617</sub> |
-| <sub>PRO 5000</sub> | <sub>Blackwell</sub> | <sub>12.0</sub> | <sub>48G</sub> | <sub>1.0</sub> | <sub>52.4</sub> | <sub>140</sub> | <sub>257</sub> | <sub>260</sub> | <sub>552</sub> | <sub>557</sub> | <sub>1064</sub> |
-| <sub>5090 D v2</sub> | <sub>Blackwell</sub> | <sub>12.0</sub> | <sub>24G</sub> | <sub>1.7</sub> | <sub>83.7</sub> | <sub>119</sub> | <sub>241</sub> | <sub>241</sub> | <sub>665</sub> | <sub>661</sub> | <sub>1177</sub> |
-| <sub>6000D</sub> | <sub>Blackwell</sub> | <sub>12.0</sub> | <sub>84G</sub> | <sub>1.3</sub> | <sub>67.5</sub> | <sub>72</sub> | <sub>151</sub> | <sub>150</sub> | <sub>391</sub> | <sub>288</sub> | <sub>946</sub> |
-| <sub>4090</sub> | <sub>Ada</sub> | <sub>8.9</sub> | <sub>24G</sub> | <sub>1.3</sub> | <sub>57.6</sub> | <sub>90</sub> | <sub>179</sub> | <sub>179</sub> | <sub>676</sub> | <sub>354</sub> | <sub>—</sub> |
-| <sub>GB10</sub> | <sub>Grace BW</sub> | <sub>12.1</sub> | <sub>128G</sub> | <sub>0.4</sub> | <sub>21.2</sub> | <sub>43</sub> | <sub>102</sub> | <sub>105</sub> | <sub>155</sub> | <sub>220</sub> | <sub>373</sub> |
+| <small>H200 NVL</sub> | <small>Hopper</sub> | <small>9.0</sub> | <small>141G</sub> | <small>59.0</sub> | <small>47.3</sub> | <small>426</sub> | <small>853</sub> | <small>854</sub> | <small>1630</sub> | <small>1661</sub> | <small>—</sub> |
+| <small>PRO 6000</sub> | <small>Blackwell</sub> | <small>12.0</sub> | <small>96G</sub> | <small>1.5</sub> | <small>83.6</sub> | <small>225</sub> | <small>458</sub> | <small>457</sub> | <small>845</sub> | <small>905</sub> | <small>1608</sub> |
+| <small>5090</sub> | <small>Blackwell</sub> | <small>12.0</sub> | <small>32G</sub> | <small>1.8</sub> | <small>83.2</sub> | <small>126</sub> | <small>254</sub> | <small>254</sub> | <small>906</sub> | <small>774</sub> | <small>1617</sub> |
+| <small>PRO 5000</sub> | <small>Blackwell</sub> | <small>12.0</sub> | <small>48G</sub> | <small>1.0</sub> | <small>52.4</sub> | <small>140</sub> | <small>257</sub> | <small>260</sub> | <small>552</sub> | <small>557</sub> | <small>1064</sub> |
+| <small>5090 D v2</sub> | <small>Blackwell</sub> | <small>12.0</sub> | <small>24G</sub> | <small>1.7</sub> | <small>83.7</sub> | <small>119</sub> | <small>241</sub> | <small>241</sub> | <small>665</sub> | <small>661</sub> | <small>1177</sub> |
+| <small>6000D</sub> | <small>Blackwell</sub> | <small>12.0</sub> | <small>84G</sub> | <small>1.3</sub> | <small>67.5</sub> | <small>72</sub> | <small>151</sub> | <small>150</sub> | <small>391</sub> | <small>288</sub> | <small>946</sub> |
+| <small>4090</sub> | <small>Ada</sub> | <small>8.9</sub> | <small>24G</sub> | <small>1.3</sub> | <small>57.6</sub> | <small>90</sub> | <small>179</sub> | <small>179</sub> | <small>676</sub> | <small>354</sub> | <small>—</sub> |
+| <small>GB10</sub> | <small>Grace BW</sub> | <small>12.1</sub> | <small>128G</sub> | <small>0.4</sub> | <small>21.2</sub> | <small>43</sub> | <small>102</sub> | <small>105</sub> | <small>155</sub> | <small>220</sub> | <small>373</sub> |
 
 > 单位: TFLOPS（INT8 为 TOPS）  GB10 为统一内存（CPU+GPU 共享）
 > 数据为 cuBLASLt dense GEMM 实测值（非稀疏，isolated 隔离测试）
