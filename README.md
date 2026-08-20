@@ -26,22 +26,19 @@ gpu-flops-bench/
 
 ### NVIDIA（8 款，按算力从高到低排序）
 
-<small>
+<table style="font-size:85%">
+<tr><th>GPU</th><th>架构</th><th>CC</th><th>显存</th><th>FP64</th><th>FP32</th><th>TF32</th><th>BF16</th><th>FP16</th><th>INT8</th><th>FP8 E4M3</th><th>NVFP4</th></tr>
+<tr><td>H200 NVL</td><td>Hopper</td><td>9.0</td><td>141 GB</td><td>58.98</td><td>47.28</td><td>425.55</td><td>853.29</td><td>853.68</td><td>1629.76</td><td>1660.83</td><td>—</td></tr>
+<tr><td>RTX PRO 6000</td><td>Blackwell</td><td>12.0</td><td>96 GB</td><td>1.54</td><td>83.60</td><td>224.70</td><td>457.61</td><td>457.44</td><td>845.39</td><td>905.32</td><td>1608.21</td></tr>
+<tr><td>RTX 5090</td><td>Blackwell</td><td>12.0</td><td>32 GB</td><td>1.77</td><td>83.24</td><td>125.80</td><td>254.03</td><td>254.21</td><td>906.14</td><td>773.52</td><td>1617.46</td></tr>
+<tr><td>RTX PRO 5000</td><td>Blackwell</td><td>12.0</td><td>48 GB</td><td>1.01</td><td>52.41</td><td>140.27</td><td>257.12</td><td>260.25</td><td>551.88</td><td>557.34</td><td>1063.53</td></tr>
+<tr><td>RTX 5090 D v2</td><td>Blackwell</td><td>12.0</td><td>24 GB</td><td>1.68</td><td>83.70</td><td>119.34</td><td>240.72</td><td>240.66</td><td>665.27</td><td>660.66</td><td>1177.03</td></tr>
+<tr><td>RTX 6000D</td><td>Blackwell</td><td>12.0</td><td>84 GB</td><td>1.32</td><td>67.52</td><td>72.26</td><td>150.53</td><td>150.03</td><td>391.06</td><td>287.89</td><td>946.03</td></tr>
+<tr><td>RTX 4090</td><td>Ada Lovelace</td><td>8.9</td><td>24 GB</td><td>1.25</td><td>57.55</td><td>90.35</td><td>179.20</td><td>179.20</td><td>676.00</td><td>354.31</td><td>—</td></tr>
+<tr><td>GB10 (DGX Spark)</td><td>Grace Blackwell</td><td>12.1</td><td>128 GB*</td><td>0.40</td><td>21.24</td><td>42.62</td><td>101.98</td><td>105.08</td><td>155.47</td><td>219.83</td><td>372.54</td></tr>
+</table>
 
-| GPU | 架构 | CC | 显存 | FP64 | FP32 | TF32 | BF16 | FP16 | INT8 | FP8 E4M3 | NVFP4 |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| H200 NVL | Hopper | 9.0 | 141 GB | 58.98 | 47.28 | 425.55 | 853.29 | 853.68 | 1629.76 | 1660.83 | UNSUPPORTED |
-| RTX PRO 6000 | Blackwell | 12.0 | 96 GB | 1.54 | 83.60 | 224.70 | 457.61 | 457.44 | 845.39 | 905.32 | 1608.21 |
-| RTX 5090 | Blackwell | 12.0 | 32 GB | 1.77 | 83.24 | 125.80 | 254.03 | 254.21 | 906.14 | 773.52 | 1617.46 |
-| RTX PRO 5000 | Blackwell | 12.0 | 48 GB | 1.01 | 52.41 | 140.27 | 257.12 | 260.25 | 551.88 | 557.34 | 1063.53 |
-| RTX 5090 D v2 | Blackwell | 12.0 | 24 GB | 1.68 | 83.70 | 119.34 | 240.72 | 240.66 | 665.27 | 660.66 | 1177.03 |
-| RTX 6000D | Blackwell | 12.0 | 84 GB | 1.32 | 67.52 | 72.26 | 150.53 | 150.03 | 391.06 | 287.89 | 946.03 |
-| RTX 4090 | Ada Lovelace | 8.9 | 24 GB | 1.25 | 57.55 | 90.35 | 179.20 | 179.20 | 676.00 | 354.31 | UNSUPPORTED |
-| GB10 (DGX Spark) | Grace Blackwell | 12.1 | 128 GB* | 0.40 | 21.24 | 42.62 | 101.98 | 105.08 | 155.47 | 219.83 | 372.54 |
-
-</small>
-
-> 单位: TFLOPS（INT8 为 TOPS）
+> 单位: TFLOPS（INT8 为 TOPS）  \* GB10 为统一内存
 > 数据为 cuBLASLt dense GEMM 实测值（非稀疏，isolated 隔离测试，取各精度最佳尺寸中位数）
 
 ### AMD（待测）
