@@ -26,7 +26,7 @@ gpu-flops-bench/
 
 ### NVIDIA（8 款，按算力从高到低排序）
 
-<sub>
+<small>
 
 | GPU | 架构 | CC | 显存 | FP64 | FP32 | TF32 | BF16 | FP16 | INT8 | FP8 E4M3 | NVFP4 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -39,7 +39,7 @@ gpu-flops-bench/
 | RTX 4090 | Ada Lovelace | 8.9 | 24 GB | 1.25 | 57.55 | 90.35 | 179.20 | 179.20 | 676.00 | 354.31 | UNSUPPORTED |
 | GB10 (DGX Spark) | Grace Blackwell | 12.1 | 128 GB* | 0.40 | 21.24 | 42.62 | 101.98 | 105.08 | 155.47 | 219.83 | 372.54 |
 
-</sub>
+</small>
 
 > 单位: TFLOPS（INT8 为 TOPS）
 > 数据为 cuBLASLt dense GEMM 实测值（非稀疏，isolated 隔离测试，取各精度最佳尺寸中位数）
