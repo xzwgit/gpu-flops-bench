@@ -3,7 +3,7 @@
 > 运行 gpu_flops_test 前查看此清单，确保所有已测 GPU 的数据都更新到 README。
 > 测完新 GPU 后，把结果追加到此清单 + 更新 README 表格。
 
-## 已测 GPU 总览 (8 款)
+## 已测 GPU 总览 (9 款)
 
 | # | GPU | 架构 | CC | 显存 | 测试日期 | 结果位置 |
 |---|---|---|---|---|---|---|
@@ -15,6 +15,7 @@
 | 6 | **NVIDIA GeForce RTX 4090** | Ada Lovelace | 8.9 | 24 GB | **2026-08-11** | **results/20260811T022856Z/** |
 | 7 | **NVIDIA RTX 6000D** | Blackwell | 12.0 | 84 GB | **2026-08-15** | **results/20260815T120216Z/** |
 | 8 | **NVIDIA GB10 (DGX Spark)** | Grace Blackwell | 12.1 | 128 GB (统一内存) | **2026-08-19** | **results/20260819T064242Z/** |
+| 9 | **NVIDIA GeForce RTX 3060** | Ampere | 8.6 | 12 GB | **2026-08-25** | **results/20260825T063234Z/** |
 
 ## 各 GPU 性能速查 (单卡最佳, TFLOPS)
 

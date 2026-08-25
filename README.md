@@ -24,7 +24,7 @@ gpu-flops-bench/
 
 ## 已测 GPU
 
-### NVIDIA（8 款，按算力从高到低排序）
+### NVIDIA（9 款，按算力从高到低排序）
 
 | <small>GPU</small> | <small>架构</small> | <small>CC</small> | <small>显存</small> | <small>FP64</small> | <small>FP32</small> | <small>TF32</small> | <small>BF16</small> | <small>FP16</small> | <small>INT8</small> | <small>E4M3</small> | <small>NVFP4</small> |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -36,6 +36,7 @@ gpu-flops-bench/
 | <small>RTX&nbsp;6000D</small> | <small>Blackwell</small> | <small>12.0</small> | <small>84G</small> | <small>1.3</small> | <small>67.5</small> | <small>72</small> | <small>151</small> | <small>150</small> | <small>391</small> | <small>288</small> | <small>946</small> |
 | <small>RTX&nbsp;4090</small> | <small>Ada&nbsp;Lovelace</small> | <small>8.9</small> | <small>24G</small> | <small>1.3</small> | <small>57.6</small> | <small>90</small> | <small>179</small> | <small>179</small> | <small>676</small> | <small>354</small> | <small>—</small> |
 | <small>GB10&nbsp;(Spark)</small> | <small>Grace&nbsp;Blackwell</small> | <small>12.1</small> | <small>128G</small> | <small>0.4</small> | <small>21.2</small> | <small>43</small> | <small>102</small> | <small>105</small> | <small>155</small> | <small>220</small> | <small>373</small> |
+| <small>RTX&nbsp;3060</small> | <small>Ampere</small> | <small>8.6</small> | <small>12G</small> | <small>0.2</small> | <small>10.3</small> | <small>13</small> | <small>27</small> | <small>27</small> | <small>95</small> | <small>—</small> | <small>—</small> |
 
 > 单位: TFLOPS（INT8 为 TOPS）  GB10 为统一内存（CPU+GPU 共享）
 > 数据为 cuBLASLt dense GEMM 实测值（非稀疏，isolated 隔离测试）
