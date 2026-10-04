@@ -42,21 +42,24 @@ gpu-flops-bench/
 > 数据为 cuBLASLt dense GEMM 实测值（非稀疏，isolated 隔离测试）
 > 完整精度数据见 [GPU_TEST_CHECKLIST.md](nvidia/GPU_TEST_CHECKLIST.md)
 
-### B300（新增检测维度：mma.sync 与 GEMM 双列）
+### B300 / PRO 6000（gpu-flops-bench v2 实测：cuBLASLt GEMM + mma.sync 双列）
 
-> 2026-10-04 用 [cuda-u](https://github.com/xzwgit/cuda-u) v0.0.2 在 8 卡 B300 上实测。旧表格式 + 新增列（mma.sync 内核级 vs GEMM cuBLASLt 库级）。SM100+ 上 mma.sync 只走 legacy tensor core，tcgen05.mma 需 cuBLASLt dispatch，两者 BF16 比值约 4:1。
+> 2026-10-04 用本工具 v2 在 B300 8 卡和 PRO 6000 上实测。GEMM 列走 cuBLASLt（tcgen05 dispatch），mma 列走 mma.sync 内核（legacy warp-level）。
 
 | <small>GPU</small> | <small>架构</small> | <small>CC</small> | <small>显存</small> | <small>FP64</small> | <small>FP32</small> | <small>TF32</small> | <small>BF16</small> | <small>BF16<br>mma</small> | <small>FP16</small> | <small>INT8</small> | <small>FP8<br>E4M3</small> | <small>FP8<br>E4M3 mma</small> | <small>NVFP4</small> | <small>INT4</small> | <small>FP4<br>E2M1</small> |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| <small>B300&nbsp;SXM6&nbsp;AC</small> | <small>Blackwell</small> | <small>10.3</small> | <small>275G</small> | <small>1.01</small> | <small>68.4</small> | <small>276</small> | <small>**2247**</small> | <small>551</small> | <small>N/A</small> | <small>152</small> | <small>**4438**</small> | <small>1958</small> | <small>**9202**</small> | <small>72</small> | <small>N/A</small> |
-| <small>RTX&nbsp;PRO&nbsp;6000</small> | <small>Blackwell</small> | <small>12.0</small> | <small>96G</small> | <small>1.53</small> | <small>80.6</small> | <small>225</small> | <small>**457**</small> | <small>462</small> | <small>457</small> | <small>882</small> | <small>**906**</small> | <small>924</small> | <small>**1619**</small> | <small>235</small> | <small>924</small> |
+| <small>B300&nbsp;SXM6&nbsp;AC</small> | <small>SM103</small> | <small>10.3</small> | <small>275G</small> | <small>1.05</small> | <small>68.8</small> | <small>**1101**</small> | <small>**2235**</small> | <small>551</small> | <small>**2235**</small> | <small>151</small> | <small>**4377**</small> | <small>1958</small> | <small>**10441**</small> | <small>74</small> | <small>N/A</small> |
+| <small>RTX&nbsp;PRO&nbsp;6000</small> | <small>SM120</small> | <small>12.0</small> | <small>96G</small> | <small>1.53</small> | <small>80.6</small> | <small>225</small> | <small>**457**</small> | <small>462</small> | <small>457</small> | <small>882</small> | <small>**906**</small> | <small>924</small> | <small>**1619**</small> | <small>235</small> | <small>924</small> |
 
 > 单位: TFLOPS（INT8/INT4 为 TOPS）
-> B300 8 卡一致性：BF16 GEMM 2233-2235、NVFP4 10360-10476（±0.2%）；8 卡 concurrent 聚合线性度≥99.7%
-> mma.sync 与 GEMM 的比值说明架构差异：PRO 6000 (SM120) 上两者几乎相等（BF16 462 vs 457），B300 (SM103) 上 mma.sync 只有 GEMM 的 25%（551 vs 2235）——SM120 满速 mma.sync，SM100+ 需 tcgen05.mma（cuBLASLt dispatch）
-> B300 INT8 dense GEMM 仅 151 TOPS（vs PRO 6000 的 882）——cuBLASLt 在 sm_103 上未优化 IMMA 路径，低精度整数是 B300 弱项
-> FP4 E2M1：PRO 6000 有值（CC 12.0），B300 为 N/A（CC 10.3，需 CC≥12.0 的 mma.sync kind::f8f6f4）
-> 数据来源：gpu-flops-bench v2（cuBLASLt GEMM + mma.sync kernel 双列），2026-10-04 实测
+> B300 8 卡一致性：BF16 2233-2235、NVFP4 10360-10476（±0.2%）；8 卡 concurrent 聚合线性度≥99.7%
+>
+> **架构发现**：
+> - **SM120 (PRO 6000) 上 mma.sync ≈ GEMM（满速）**：BF16 462 vs 457、FP8 924 vs 906——消费级 Blackwell 的 mma.sync 与 cuBLASLt 走同一硬件路径
+> - **SM103 (B300) 上 mma.sync 只有 GEMM 的 25-45%**：BF16 551 vs 2235 (25%)、FP8 1958 vs 4377 (45%)——数据中心 Blackwell 需 tcgen05.mma（cuBLASLt dispatch），mma.sync 是 legacy 降档路径
+> - **B300 INT8 = 151 TOPS（所有标准 API 路径一致：mma.sync ≈ cuBLASLt INT32I ≈ 149-152）**，远低于 FP8 的 4377。硬件 spec INT8 ≈ FP8 ≈ 4500 TOPS（同一 8-bit tensor core），纯粹是 **cuBLASLt 未给 INT8 dispatch tcgen05**。实际 8-bit 推理推荐用 FP8 E4M3 替代（同一硬件，29× 快于 INT32I）
+> - **FP4 E2M1**：PRO 6000 有值 924（CC 12.0 的 mma.sync kind::f8f6f4），B300 N/A（CC 10.3）
+> - INT8 F32acc（混合精度）在 B300 上仅 40 TOPS，比 INT32I 还差——证实不是计算类型问题，是 INT8 整体无 tcgen05 路径
 
 ### AMD（待测）
 
