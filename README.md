@@ -42,18 +42,20 @@ gpu-flops-bench/
 > 数据为 cuBLASLt dense GEMM 实测值（非稀疏，isolated 隔离测试）
 > 完整精度数据见 [GPU_TEST_CHECKLIST.md](nvidia/GPU_TEST_CHECKLIST.md)
 
-### B300（新维度：mma.sync 与 GEMM (cuBLASLt) 双列对比）
+### B300（新增检测维度：mma.sync 与 GEMM 双列）
 
-> 2026-10-04 用 [cuda-u](https://github.com/xzwgit/cuda-u) v0.0.2 在 8 卡 B300 上实测。此表与上面旧格式表分开，因为检测项更多：新增 **GEMM (cuBLASLt)** 列（tcgen05.mma 路径，与实际推理/训练负载对应）与 mma.sync 列并列。SM100+ 上 mma.sync 只打 legacy tensor core，两者比值约 4:1（BF16）。
+> 2026-10-04 用 [cuda-u](https://github.com/xzwgit/cuda-u) v0.0.2 在 8 卡 B300 上实测。旧表格式 + 新增列（mma.sync 内核级 vs GEMM cuBLASLt 库级）。SM100+ 上 mma.sync 只走 legacy tensor core，tcgen05.mma 需 cuBLASLt dispatch，两者 BF16 比值约 4:1。
 
-| <small>GPU</small> | <small>架构</small> | <small>CC</small> | <small>显存</small> | <small>BF16<br>mma / GEMM</small> | <small>FP8<br>mma / GEMM</small> | <small>NVFP4<br>GEMM</small> |
-|---|---|---|---|---|---|---|
-| <small>B300&nbsp;SXM6&nbsp;AC</small> | <small>Blackwell</small> | <small>10.3</small> | <small>275G</small> | <small>552 / **2247**</small> | <small>1958 / **4438**</small> | <small>**9202**</small> |
+| <small>GPU</small> | <small>架构</small> | <small>CC</small> | <small>显存</small> | <small>FP64</small> | <small>FP32</small> | <small>TF32</small> | <small>BF16</small> | <small>BF16<br>mma</small> | <small>FP16</small> | <small>INT8</small> | <small>E4M3</small> | <small>E4M3<br>mma</small> | <small>NVFP4</small> | <small>INT4</small> | <small>FP4<br>E2M1</small> |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| <small>B300&nbsp;SXM6&nbsp;AC</small> | <small>Blackwell</small> | <small>10.3</small> | <small>275G</small> | <small>1.01</small> | <small>68.4</small> | <small>276</small> | <small>**2247**</small> | <small>551</small> | <small>N/A</small> | <small>152</small> | <small>**4438**</small> | <small>1958</small> | <small>**9202**</small> | <small>72</small> | <small>N/A</small> |
 
-> 单位: TFLOPS。8 卡实测范围：BF16 2245-2247、FP8 4429-4439、NVFP4 9146-9420（±0.2%）。
-> 其他：FP64 1.01、FP32(vector) 68.4、TF32(mma) 276、INT8(mma) 152、INT4 72 TFLOPS/TOPS。
-> 带宽：H2D 55.1 / D2H 56.7 / D2D 5210 GB/s（spec 7672 GB/s HBM3e 7680bit）。
-> 测试工具：[cuda-u](https://github.com/xzwgit/cuda-u) commit 128f2e4，gemm_bench.cpp cuBLASLt 路径。
+> 单位: TFLOPS（INT8/INT4 为 TOPS）
+> 8 卡一致性：BF16 GEMM 2245-2247、FP8 GEMM 4429-4439、NVFP4 9146-9420（±0.2%）
+> 带宽：H2D 55.1 / D2H 56.7 / D2D 5210 GB/s（spec 7672 GB/s HBM3e 7680bit）
+> 148 SM / 18944 cores / 592 tensor cores / 2032 MHz / 1100W / PCIe Gen6 x16 / L2 126MiB
+> FP16 GEMM 未单测（mma.sync 551 与 BF16 mma 相同属预期）；FP4 E2M1 需 CC≥12.0
+> 测试工具：[cuda-u](https://github.com/xzwgit/cuda-u) commit 128f2e4
 
 ### AMD（待测）
 
