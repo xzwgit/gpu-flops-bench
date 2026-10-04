@@ -34,6 +34,22 @@ while IFS= read -r cap; do
   fi
 done < <(nvidia-smi --query-gpu=compute_cap --format=csv,noheader 2>/dev/null || true)
 
+# Always include sm_120a (FP4 E2M1 mma.sync requires family-specific
+# compilation target) and sm_100a/103a (datacenter Blackwell) regardless
+# of what GPUs are present, so the binary works on any machine.
+for extra_cap in 100a 103a 120a; do
+  flag="-gencode=arch=compute_${extra_cap},code=sm_${extra_cap}"
+  duplicate=0
+  for existing in "${arch_flags[@]}"; do
+    if [[ "${existing}" == "${flag}" ]]; then
+      duplicate=1
+    fi
+  done
+  if [[ "${duplicate}" -eq 0 ]]; then
+    arch_flags+=("${flag}")
+  fi
+done
+
 if [[ "${#arch_flags[@]}" -eq 0 ]]; then
   arch_flags+=("-arch=native")
 fi

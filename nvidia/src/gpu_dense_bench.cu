@@ -85,8 +85,168 @@ struct Options {
   bool quick = false;
   std::string output;              // 输出目录；空 = 默认 results/<时间戳>
   std::string precisions =
-      "int4,int8,fp8_e4m3,nvfp4,fp16,bf16,tf32,fp32,fp64";
+      "int4,int8,fp8_e4m3,fp8_e4m3_mma,nvfp4,fp16,bf16,bf16_mma,tf32,fp32,fp64,fp4_e2m1";
 };
+
+
+//──────────────────────────────────────────────────────────────────────────────
+// mma.sync kernel benchmarks (kernel-level, not cuBLASLt library calls).
+// On datacenter Blackwell (sm_100+) these only exercise the legacy warp-level
+// tensor core path; cuBLASLt dispatches tcgen05.mma for full rate.
+//──────────────────────────────────────────────────────────────────────────────
+#if defined(__CUDA_ARCH_LIST__) || !defined(__CUDA_ARCH__)
+#define GPU_BENCH_MMA_ENABLE 1
+#endif
+
+#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 800
+__global__ void mma_bf16_kernel(float* out, int iters) {
+    uint32_t a = 0x3f803f80u, b = a;
+    float d0 = 0.f, d1 = 0.f, d2 = 0.f, d3 = 0.f;
+    for (int i = 0; i < iters; i++) {
+        #pragma unroll 32
+        for (int j = 0; j < 256; j++)
+            asm volatile(
+                "mma.sync.aligned.m16n8k16.row.col.f32.bf16.bf16.f32 "
+                "{%0,%1,%2,%3},{%4,%5,%6,%7},{%8,%9},{%0,%1,%2,%3};"
+                : "+f"(d0), "+f"(d1), "+f"(d2), "+f"(d3)
+                : "r"(a), "r"(a), "r"(a), "r"(a), "r"(b), "r"(b));
+    }
+    out[blockIdx.x * blockDim.x + threadIdx.x] = d0 + d1 + d2 + d3;
+}
+#endif
+
+#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 890
+__global__ void mma_fp8_kernel(float* out, int iters) {
+    uint32_t a = 0x3c3c3c3cu, b = a;
+    float d0 = 0.f, d1 = 0.f, d2 = 0.f, d3 = 0.f;
+    for (int i = 0; i < iters; i++) {
+        #pragma unroll 32
+        for (int j = 0; j < 256; j++)
+            asm volatile(
+                "mma.sync.aligned.m16n8k32.row.col.f32.e4m3.e4m3.f32 "
+                "{%0,%1,%2,%3},{%4,%5,%6,%7},{%8,%9},{%0,%1,%2,%3};"
+                : "+f"(d0), "+f"(d1), "+f"(d2), "+f"(d3)
+                : "r"(a), "r"(a), "r"(a), "r"(a), "r"(b), "r"(b));
+    }
+    out[blockIdx.x * blockDim.x + threadIdx.x] = d0 + d1 + d2 + d3;
+}
+#endif
+
+#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 750
+__global__ void mma_int4_kernel(float* out, int iters) {
+    uint32_t a = 0x11111111u, b = 0x11111111u;
+    int d0 = 0, d1 = 0, d2 = 0, d3 = 0;
+    for (int i = 0; i < iters; i++) {
+        #pragma unroll 32
+        for (int j = 0; j < 256; j++)
+            asm volatile(
+                "mma.sync.aligned.m16n8k32.row.col.s32.s4.s4.s32 "
+                "{%0,%1,%2,%3},{%4,%5},{%6},{%0,%1,%2,%3};"
+                : "+r"(d0), "+r"(d1), "+r"(d2), "+r"(d3)
+                : "r"(a), "r"(a), "r"(b));
+    }
+    out[blockIdx.x * blockDim.x + threadIdx.x] = (float)(d0 + d1 + d2 + d3);
+}
+#endif
+
+#if !defined(__CUDA_ARCH__) || (defined(__CUDA_ARCH_FAMILY_SPECIFIC__) && __CUDA_ARCH_FAMILY_SPECIFIC__ >= 1200)
+__global__ void mma_fp4_kernel(float* out, int iters) {
+    uint32_t a = 0x11111111u, b = 0x11111111u;
+    float d0 = 0.f, d1 = 0.f, d2 = 0.f, d3 = 0.f;
+    for (int i = 0; i < iters; i++) {
+        #pragma unroll 32
+        for (int j = 0; j < 256; j++)
+            asm volatile(
+                "mma.sync.aligned.kind::f8f6f4.row.col.m16n8k32.f32.e2m1.e2m1.f32 "
+                "{%0,%1,%2,%3},{%4,%5,%6,%7},{%8,%9},{%0,%1,%2,%3};"
+                : "+f"(d0), "+f"(d1), "+f"(d2), "+f"(d3)
+                : "r"(a), "r"(a), "r"(a), "r"(a), "r"(b), "r"(b));
+    }
+    out[blockIdx.x * blockDim.x + threadIdx.x] = d0 + d1 + d2 + d3;
+}
+#endif
+
+typedef void (*MmaKernel)(float*, int);
+
+static Result run_mma_benchmark(
+    const std::string& name, MmaKernel kernel, int sm_count,
+    double ops_per_thread_per_iter, int min_cc, int device_cc) {
+  Result r;
+  r.precision = name;
+  r.input_type = "MMA_SYNC";
+  r.accumulator_type = "FP32";
+  r.output_type = "FP32";
+  r.unit = (name == "int4") ? "TOPS" : "TFLOPS";
+  r.status = "OK";
+
+  if (device_cc < min_cc) {
+    r.status = "UNSUPPORTED";
+    std::ostringstream msg;
+    msg << "Requires compute capability " << min_cc / 10 << "." << min_cc % 10
+        << "; device is " << device_cc / 10 << "." << device_cc % 10;
+    r.validation = msg.str();
+    return r;
+  }
+
+  if (!kernel) {
+    r.status = "UNSUPPORTED";
+    r.validation = "Not compiled for this architecture";
+    return r;
+  }
+
+  const int blocks = sm_count * 8;
+  const int threads = 256;
+  float* scratch;
+  if (cudaMalloc(&scratch, blocks * threads * sizeof(float)) != cudaSuccess) {
+    r.status = "ERROR";
+    r.validation = "cudaMalloc failed";
+    return r;
+  }
+
+  // calibrate
+  kernel<<<blocks, threads>>>(scratch, 32);
+  cudaDeviceSynchronize();
+  int iters = 200;
+  cudaEvent_t ev0, ev1;
+  cudaEventCreate(&ev0);
+  cudaEventCreate(&ev1);
+  float ms = 0;
+  for (int attempt = 0; attempt < 3; attempt++) {
+    cudaEventRecord(ev0);
+    kernel<<<blocks, threads>>>(scratch, iters);
+    cudaEventRecord(ev1);
+    cudaEventSynchronize(ev1);
+    cudaEventElapsedTime(&ms, ev0, ev1);
+    if (ms >= 60.f) break;
+    double scaled = (double)iters * (180.f / (ms > 0.1f ? ms : 0.1f));
+    iters = scaled > 2000000 ? 2000000 : (int)scaled;
+  }
+
+  double best = 0;
+  for (int rep = 0; rep < 3; rep++) {
+    cudaEventRecord(ev0);
+    kernel<<<blocks, threads>>>(scratch, iters);
+    cudaEventRecord(ev1);
+    cudaEventSynchronize(ev1);
+    cudaEventElapsedTime(&ms, ev0, ev1);
+    double ops = (double)blocks * threads * ops_per_thread_per_iter * iters;
+    double rate = ops / (ms / 1e3);
+    if (rate > best) best = rate;
+  }
+
+  cudaEventDestroy(ev0);
+  cudaEventDestroy(ev1);
+  cudaFree(scratch);
+  r.throughput = best / (r.unit == "TOPS" ? 1e12 : 1e12); // both TFLOPS/TOPS
+  r.best = true;
+  r.m = r.n = r.k = 0; // kernel-level, not matrix size
+  r.validation = "OK";
+  return r;
+}
+
+//──────────────────────────────────────────────────────────────────────────────
+// End mma.sync kernel benchmarks
+//──────────────────────────────────────────────────────────────────────────────
 
 struct PrecisionSpec {
   std::string name;
@@ -1938,18 +2098,48 @@ DeviceReport run_device(int device_id, const Options& options) {
 #endif
       continue;
     }
+    if (requested == "bf16_mma") {
+#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 800
+      results.push_back(run_mma_benchmark(
+          "bf16_mma", mma_bf16_kernel, properties.multiProcessorCount,
+          256.0 * (4096.0 / 32), 80, compute_capability));
+#else
+      results.push_back(unsupported_result(requested, "Not compiled for this arch"));
+#endif
+      continue;
+    }
+    if (requested == "fp8_e4m3_mma") {
+#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 890
+      results.push_back(run_mma_benchmark(
+          "fp8_e4m3_mma", mma_fp8_kernel, properties.multiProcessorCount,
+          256.0 * (8192.0 / 32), 89, compute_capability));
+#else
+      results.push_back(unsupported_result(requested, "Not compiled for this arch"));
+#endif
+      continue;
+    }
+    if (requested == "fp4_e2m1") {
+#if !defined(__CUDA_ARCH__) || (defined(__CUDA_ARCH_FAMILY_SPECIFIC__) && __CUDA_ARCH_FAMILY_SPECIFIC__ >= 1200)
+      results.push_back(run_mma_benchmark(
+          "fp4_e2m1", mma_fp4_kernel, properties.multiProcessorCount,
+          256.0 * (8192.0 / 32), 120, compute_capability));
+#else
+      results.push_back(unsupported_result(requested,
+          "FP4 E2M1 requires compute capability 12.0+ (consumer Blackwell)"));
+#endif
+      continue;
+    }
     if (requested == "int4") {
-      // cuBLASLt 不提供 INT4 稠密 GEMM 内核（CUDA_R_4I 在各 compute/output 组合
-      // 与布局下均返回 CUBLAS_STATUS_NOT_SUPPORTED，已在多架构上实测确认）。
-      // 5090 等 Blackwell 硬件虽支持 INT4 Tensor Core，但仅通过推理框架
-      // （CUTLASS / TensorRT-LLM 等）以分组量化路径使用，而非标准稠密 GEMM API。
-      // 量化推理（如 AWQ-INT4）的实际计算是 INT4 权重反量化回 FP16/BF16 再做
-      // GEMM，并非纯 INT4 Tensor Core 稠密乘加，故此处不伪造数值。
-      results.push_back(unsupported_result(
-          requested,
-          "cuBLASLt does not provide a dense INT4 GEMM kernel; INT4 Tensor "
-          "Core is used via inference frameworks (CUTLASS/quantized paths), "
-          "not standard dense GEMM APIs"));
+      // cuBLASLt 无 INT4 稠密 GEMM；改用 mma.sync 内核级测量
+      // (s4×s4→s32 tensor core, same methodology as cuda-u)
+#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 750
+      results.push_back(run_mma_benchmark(
+          "int4", mma_int4_kernel, properties.multiProcessorCount,
+          256.0 * (8192.0 / 32), 75, compute_capability));
+#else
+      results.push_back(unsupported_result(requested,
+          "INT4 mma.sync requires compute capability 7.5+"));
+#endif
       continue;
     }
     const PrecisionSpec* spec = find_spec(specs, requested);
