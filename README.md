@@ -44,18 +44,20 @@ gpu-flops-bench/
 
 ### v2 版（新增检测维度：mma.sync 与 GEMM (cuBLASLt) 双列）
 
-> 2026-10-04 用本工具 v2 在 B300 8 卡和 PRO 6000 上实测。GEMM 列走 cuBLASLt（tcgen05 dispatch），mma 列走 mma.sync 内核（legacy warp-level）。
+> 2026-10-04 用本工具 v2 在 B300 8 卡、PRO 6000 和 RTX 6000D 上实测。GEMM 列走 cuBLASLt（tcgen05 dispatch），mma 列走 mma.sync 内核（legacy warp-level）。
 
 | <small>GPU</small> | <small>架构</small> | <small>CC</small> | <small>显存</small> | <small>FP64</small> | <small>FP32</small> | <small>TF32</small> | <small>BF16</small> | <small>BF16<br>mma</small> | <small>FP16</small> | <small>INT8</small> | <small>FP8<br>E4M3</small> | <small>FP8<br>E4M3 mma</small> | <small>NVFP4</small> | <small>INT4</small> | <small>FP4<br>E2M1</small> |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | <small>B300&nbsp;SXM6&nbsp;AC</small> | <small>SM103</small> | <small>10.3</small> | <small>275G</small> | <small>1.05</small> | <small>68.8</small> | <small>**1101**</small> | <small>**2235**</small> | <small>551</small> | <small>**2235**</small> | <small>151</small> | <small>**4377**</small> | <small>1958</small> | <small>**10441**</small> | <small>74</small> | <small>N/A</small> |
 | <small>RTX&nbsp;PRO&nbsp;6000</small> | <small>SM120</small> | <small>12.0</small> | <small>96G</small> | <small>1.53</small> | <small>80.6</small> | <small>225</small> | <small>**457**</small> | <small>462</small> | <small>457</small> | <small>882</small> | <small>**906**</small> | <small>924</small> | <small>**1619**</small> | <small>235</small> | <small>924</small> |
+| <small>RTX&nbsp;6000D</small> | <small>SM120</small> | <small>12.0</small> | <small>84G</small> | <small>1.28</small> | <small>66.7</small> | <small>72</small> | <small>**176**</small> | <small>146</small> | <small>144</small> | <small>472</small> | <small>**386**</small> | <small>291</small> | <small>**947**</small> | <small>141</small> | <small>379</small> |
 
 > 单位: TFLOPS（INT8/INT4 为 TOPS）
 > B300 8 卡一致性：BF16 2233-2235、NVFP4 10360-10476（±0.2%）；8 卡 concurrent 聚合线性度≥99.7%
 >
 > **架构发现**：
 > - **SM120 (PRO 6000) 上 mma.sync ≈ GEMM（满速）**：BF16 462 vs 457、FP8 924 vs 906——消费级 Blackwell 的 mma.sync 与 cuBLASLt 走同一硬件路径
+> - **RTX 6000D（SM120 出口版，156 SM，驱动 590.48.01）**：mma/GEMM 比值 BF16 0.83（146/176）、FP8 0.75（291/386）——低于 PRO 6000 的 ≈1.0，仍远高于 B300 的 0.25~0.45，落在 SM120 模式内。该卡 INT8 (472) > FP8 (386)、BF16 (176) > FP16 (144)，排序与 PRO 6000 相反；NVFP4 947 为该卡最高吞吐。BF16 176 与 2026-08 另一台 RTX 6000D 的 v1 实测 151 同量级（两台不同机器独立复现）
 > - **SM103 (B300) 上 mma.sync 只有 GEMM 的 25-45%**：BF16 551 vs 2235 (25%)、FP8 1958 vs 4377 (45%)——数据中心 Blackwell 需 tcgen05.mma（cuBLASLt dispatch），mma.sync 是 legacy 降档路径
 > - **B300 INT8 = 151 TOPS（所有标准 API 路径一致：mma.sync ≈ cuBLASLt INT32I ≈ 149-152）**，远低于 FP8 的 4377。硬件 spec INT8 ≈ FP8 ≈ 4500 TOPS（同一 8-bit tensor core），纯粹是 **cuBLASLt 未给 INT8 dispatch tcgen05**。实际 8-bit 推理推荐用 FP8 E4M3 替代（同一硬件，29× 快于 INT32I）
 > - **B300 低精度整数全面弱项**：INT8 = 151 TOPS（vs PRO 6000 的 882，仅 17%）、**INT4 = 74 TOPS（vs PRO 6000 的 235，仅 31%）**——SM103 上低精度整数（INT8/INT4）的 mma.sync 和 cuBLASLt 路径均无 tcgen05 dispatch，与 BF16/FP8 高精度路径形成鲜明对比。8-bit 以下量化推理在 B300 上应用 FP8 E4M3（4377 TFLOPS）或 NVFP4（10441 TFLOPS）替代
