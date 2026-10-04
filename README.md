@@ -49,13 +49,14 @@ gpu-flops-bench/
 | <small>GPU</small> | <small>架构</small> | <small>CC</small> | <small>显存</small> | <small>FP64</small> | <small>FP32</small> | <small>TF32</small> | <small>BF16</small> | <small>BF16<br>mma</small> | <small>FP16</small> | <small>INT8</small> | <small>FP8<br>E4M3</small> | <small>FP8<br>E4M3 mma</small> | <small>NVFP4</small> | <small>INT4</small> | <small>FP4<br>E2M1</small> |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | <small>B300&nbsp;SXM6&nbsp;AC</small> | <small>Blackwell</small> | <small>10.3</small> | <small>275G</small> | <small>1.01</small> | <small>68.4</small> | <small>276</small> | <small>**2247**</small> | <small>551</small> | <small>N/A</small> | <small>152</small> | <small>**4438**</small> | <small>1958</small> | <small>**9202**</small> | <small>72</small> | <small>N/A</small> |
+| <small>RTX&nbsp;PRO&nbsp;6000</small> | <small>Blackwell</small> | <small>12.0</small> | <small>96G</small> | <small>1.53</small> | <small>80.6</small> | <small>225</small> | <small>**457**</small> | <small>462</small> | <small>457</small> | <small>882</small> | <small>**906**</small> | <small>924</small> | <small>**1619**</small> | <small>235</small> | <small>924</small> |
 
 > 单位: TFLOPS（INT8/INT4 为 TOPS）
-> 8 卡一致性：BF16 GEMM 2245-2247、FP8 GEMM 4429-4439、NVFP4 9146-9420（±0.2%）
-> 带宽：H2D 55.1 / D2H 56.7 / D2D 5210 GB/s（spec 7672 GB/s HBM3e 7680bit）
-> 148 SM / 18944 cores / 592 tensor cores / 2032 MHz / 1100W / PCIe Gen6 x16 / L2 126MiB
-> FP16 GEMM 未单测（mma.sync 551 与 BF16 mma 相同属预期）；FP4 E2M1 需 CC≥12.0
-> 测试工具：[cuda-u](https://github.com/xzwgit/cuda-u) commit 128f2e4
+> B300 8 卡一致性：BF16 GEMM 2233-2235、NVFP4 10360-10476（±0.2%）；8 卡 concurrent 聚合线性度≥99.7%
+> mma.sync 与 GEMM 的比值说明架构差异：PRO 6000 (SM120) 上两者几乎相等（BF16 462 vs 457），B300 (SM103) 上 mma.sync 只有 GEMM 的 25%（551 vs 2235）——SM120 满速 mma.sync，SM100+ 需 tcgen05.mma（cuBLASLt dispatch）
+> B300 INT8 dense GEMM 仅 151 TOPS（vs PRO 6000 的 882）——cuBLASLt 在 sm_103 上未优化 IMMA 路径，低精度整数是 B300 弱项
+> FP4 E2M1：PRO 6000 有值（CC 12.0），B300 为 N/A（CC 10.3，需 CC≥12.0 的 mma.sync kind::f8f6f4）
+> 数据来源：gpu-flops-bench v2（cuBLASLt GEMM + mma.sync kernel 双列），2026-10-04 实测
 
 ### AMD（待测）
 
