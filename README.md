@@ -42,9 +42,9 @@ gpu-flops-bench/
 > 数据为 cuBLASLt dense GEMM 实测值（非稀疏，isolated 隔离测试）
 > 完整精度数据见 [GPU_TEST_CHECKLIST.md](nvidia/GPU_TEST_CHECKLIST.md)
 
-### NVIDIA 数据中心级（B300 SXM6，SM103）
+### B300（新维度：mma.sync 与 GEMM (cuBLASLt) 双列对比）
 
-> 2026-10-04 用 [cuda-u](https://github.com/xzwgit/cuda-u) v0.0.2（cuBLASLt GEMM 列）在 8 卡 B300 上实测。数据中心 Blackwell 的 mma.sync 只打 legacy tensor core（4x 低于 tcgen05），GEMM 列走 cuBLASLt dispatch tcgen05.mma，与实际推理/训练负载对应。
+> 2026-10-04 用 [cuda-u](https://github.com/xzwgit/cuda-u) v0.0.2 在 8 卡 B300 上实测。此表与上面旧格式表分开，因为检测项更多：新增 **GEMM (cuBLASLt)** 列（tcgen05.mma 路径，与实际推理/训练负载对应）与 mma.sync 列并列。SM100+ 上 mma.sync 只打 legacy tensor core，两者比值约 4:1（BF16）。
 
 | <small>GPU</small> | <small>架构</small> | <small>CC</small> | <small>显存</small> | <small>BF16<br>mma / GEMM</small> | <small>FP8<br>mma / GEMM</small> | <small>NVFP4<br>GEMM</small> |
 |---|---|---|---|---|---|---|
