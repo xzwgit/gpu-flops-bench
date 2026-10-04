@@ -85,7 +85,7 @@ struct Options {
   bool quick = false;
   std::string output;              // 输出目录；空 = 默认 results/<时间戳>
   std::string precisions =
-      "int4,int8,fp8_e4m3,fp8_e4m3_mma,nvfp4,fp16,bf16,bf16_mma,tf32,fp32,fp64,fp4_e2m1";
+      "fp64,fp32,tf32,bf16,bf16_mma,fp16,int8,fp8_e4m3,fp8_e4m3_mma,nvfp4,int4,fp4_e2m1";
 };
 
 
