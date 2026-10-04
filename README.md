@@ -58,6 +58,7 @@ gpu-flops-bench/
 > - **SM120 (PRO 6000) 上 mma.sync ≈ GEMM（满速）**：BF16 462 vs 457、FP8 924 vs 906——消费级 Blackwell 的 mma.sync 与 cuBLASLt 走同一硬件路径
 > - **SM103 (B300) 上 mma.sync 只有 GEMM 的 25-45%**：BF16 551 vs 2235 (25%)、FP8 1958 vs 4377 (45%)——数据中心 Blackwell 需 tcgen05.mma（cuBLASLt dispatch），mma.sync 是 legacy 降档路径
 > - **B300 INT8 = 151 TOPS（所有标准 API 路径一致：mma.sync ≈ cuBLASLt INT32I ≈ 149-152）**，远低于 FP8 的 4377。硬件 spec INT8 ≈ FP8 ≈ 4500 TOPS（同一 8-bit tensor core），纯粹是 **cuBLASLt 未给 INT8 dispatch tcgen05**。实际 8-bit 推理推荐用 FP8 E4M3 替代（同一硬件，29× 快于 INT32I）
+> - **B300 低精度整数全面弱项**：INT8 = 151 TOPS（vs PRO 6000 的 882，仅 17%）、**INT4 = 74 TOPS（vs PRO 6000 的 235，仅 31%）**——SM103 上低精度整数（INT8/INT4）的 mma.sync 和 cuBLASLt 路径均无 tcgen05 dispatch，与 BF16/FP8 高精度路径形成鲜明对比。8-bit 以下量化推理在 B300 上应用 FP8 E4M3（4377 TFLOPS）或 NVFP4（10441 TFLOPS）替代
 > - **FP4 E2M1**：PRO 6000 有值 924（CC 12.0 的 mma.sync kind::f8f6f4），B300 N/A（CC 10.3）
 > - INT8 F32acc（混合精度）在 B300 上仅 40 TOPS，比 INT32I 还差——证实不是计算类型问题，是 INT8 整体无 tcgen05 路径
 
