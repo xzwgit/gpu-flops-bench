@@ -168,6 +168,47 @@ __global__ void mma_fp4_kernel(float* out, int iters) {
 
 typedef void (*MmaKernel)(float*, int);
 
+
+//──────────────────────────────────────────────────────────────────────────────
+// End mma.sync kernel benchmarks
+//──────────────────────────────────────────────────────────────────────────────
+
+struct PrecisionSpec {
+  std::string name;
+  std::string input_type;
+  std::string accumulator_type;
+  std::string output_type;
+  std::string unit;
+  cudaDataType_t a_type;
+  cudaDataType_t b_type;
+  cudaDataType_t c_type;
+  cudaDataType_t d_type;
+  cublasComputeType_t compute_type;
+  cudaDataType_t scale_type;
+  double input_value;
+  int min_cc;
+};
+
+struct Result {
+  std::string precision;
+  std::string input_type;
+  std::string accumulator_type;
+  std::string output_type;
+  std::string unit;
+  int m = 0;
+  int n = 0;
+  int k = 0;
+  double median_ms = 0.0;
+  double p90_ms = 0.0;
+  double throughput = 0.0;
+  bool best = false;
+  std::string validation = "NOT_RUN";
+  std::string status = "ERROR";
+  std::string algorithm;
+  std::size_t workspace_bytes = 0;
+  std::string message;
+};
+
 static Result run_mma_benchmark(
     const std::string& name, MmaKernel kernel, int sm_count,
     double ops_per_thread_per_iter, int min_cc, int device_cc) {
@@ -244,45 +285,6 @@ static Result run_mma_benchmark(
   return r;
 }
 
-//──────────────────────────────────────────────────────────────────────────────
-// End mma.sync kernel benchmarks
-//──────────────────────────────────────────────────────────────────────────────
-
-struct PrecisionSpec {
-  std::string name;
-  std::string input_type;
-  std::string accumulator_type;
-  std::string output_type;
-  std::string unit;
-  cudaDataType_t a_type;
-  cudaDataType_t b_type;
-  cudaDataType_t c_type;
-  cudaDataType_t d_type;
-  cublasComputeType_t compute_type;
-  cudaDataType_t scale_type;
-  double input_value;
-  int min_cc;
-};
-
-struct Result {
-  std::string precision;
-  std::string input_type;
-  std::string accumulator_type;
-  std::string output_type;
-  std::string unit;
-  int m = 0;
-  int n = 0;
-  int k = 0;
-  double median_ms = 0.0;
-  double p90_ms = 0.0;
-  double throughput = 0.0;
-  bool best = false;
-  std::string validation = "NOT_RUN";
-  std::string status = "ERROR";
-  std::string algorithm;
-  std::size_t workspace_bytes = 0;
-  std::string message;
-};
 
 // 单卡完整报告：对应 Python run_one() 返回的字典。device 信息与 results 分离，
 // 与 Python best_rows() 的增强逻辑（从 device 取 name/compute_capability）对齐。
