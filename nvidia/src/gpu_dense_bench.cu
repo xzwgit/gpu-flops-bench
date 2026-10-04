@@ -85,7 +85,7 @@ struct Options {
   bool quick = false;
   std::string output;              // 输出目录；空 = 默认 results/<时间戳>
   std::string precisions =
-      "fp64,fp32,tf32,bf16,bf16_mma,fp16,int8,fp8_e4m3,fp8_e4m3_mma,nvfp4,int4,fp4_e2m1";
+      "fp64,fp32,tf32,bf16,bf16_mma,fp16,int8,int8_mma,fp8_e4m3,fp8_e4m3_mma,nvfp4,int4,fp4_e2m1";
 };
 
 
@@ -99,6 +99,21 @@ struct Options {
 #endif
 
 #if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 800
+__global__ void mma_int8_sync_kernel(float* out, int iters) {
+    uint32_t a = 0x01010101u, b = 0x01010101u;
+    int d0 = 0, d1 = 0, d2 = 0, d3 = 0;
+    for (int i = 0; i < iters; i++) {
+        #pragma unroll 32
+        for (int j = 0; j < 256; j++)
+            asm volatile(
+                "mma.sync.aligned.m16n8k32.row.col.s32.s8.s8.s32 "
+                "{%0,%1,%2,%3},{%4,%5,%6,%7},{%8,%9},{%0,%1,%2,%3};"
+                : "+r"(d0), "+r"(d1), "+r"(d2), "+r"(d3)
+                : "r"(a), "r"(a), "r"(a), "r"(a), "r"(b), "r"(b));
+    }
+    out[blockIdx.x * blockDim.x + threadIdx.x] = (float)(d0 + d1 + d2 + d3);
+}
+
 __global__ void mma_bf16_kernel(float* out, int iters) {
     uint32_t a = 0x3f803f80u, b = a;
     float d0 = 0.f, d1 = 0.f, d2 = 0.f, d3 = 0.f;
@@ -2098,6 +2113,12 @@ DeviceReport run_device(int device_id, const Options& options) {
           "NVFP4 requires CUDA Toolkit 13.0 or newer at build time "
           "and Blackwell (CC 10.0+) hardware"));
 #endif
+      continue;
+    }
+    if (requested == "int8_mma") {
+      results.push_back(run_mma_benchmark(
+          "int8_mma", mma_int8_sync_kernel, properties.multiProcessorCount,
+          256.0 * (8192.0 / 32), 80, compute_capability));
       continue;
     }
     if (requested == "bf16_mma") {
