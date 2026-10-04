@@ -42,7 +42,7 @@ gpu-flops-bench/
 > 数据为 cuBLASLt dense GEMM 实测值（非稀疏，isolated 隔离测试）
 > 完整精度数据见 [GPU_TEST_CHECKLIST.md](nvidia/GPU_TEST_CHECKLIST.md)
 
-### B300 / PRO 6000（gpu-flops-bench v2 实测：cuBLASLt GEMM + mma.sync 双列）
+### v2 版（新增检测维度：mma.sync 与 GEMM (cuBLASLt) 双列）
 
 > 2026-10-04 用本工具 v2 在 B300 8 卡和 PRO 6000 上实测。GEMM 列走 cuBLASLt（tcgen05 dispatch），mma 列走 mma.sync 内核（legacy warp-level）。
 
