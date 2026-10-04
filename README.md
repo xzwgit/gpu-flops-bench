@@ -46,7 +46,7 @@ gpu-flops-bench/
 
 > 2026-10-04 用 [cuda-u](https://github.com/xzwgit/cuda-u) v0.0.2 在 8 卡 B300 上实测。旧表格式 + 新增列（mma.sync 内核级 vs GEMM cuBLASLt 库级）。SM100+ 上 mma.sync 只走 legacy tensor core，tcgen05.mma 需 cuBLASLt dispatch，两者 BF16 比值约 4:1。
 
-| <small>GPU</small> | <small>架构</small> | <small>CC</small> | <small>显存</small> | <small>FP64</small> | <small>FP32</small> | <small>TF32</small> | <small>BF16</small> | <small>BF16<br>mma</small> | <small>FP16</small> | <small>INT8</small> | <small>E4M3</small> | <small>E4M3<br>mma</small> | <small>NVFP4</small> | <small>INT4</small> | <small>FP4<br>E2M1</small> |
+| <small>GPU</small> | <small>架构</small> | <small>CC</small> | <small>显存</small> | <small>FP64</small> | <small>FP32</small> | <small>TF32</small> | <small>BF16</small> | <small>BF16<br>mma</small> | <small>FP16</small> | <small>INT8</small> | <small>FP8<br>E4M3</small> | <small>FP8<br>E4M3 mma</small> | <small>NVFP4</small> | <small>INT4</small> | <small>FP4<br>E2M1</small> |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | <small>B300&nbsp;SXM6&nbsp;AC</small> | <small>Blackwell</small> | <small>10.3</small> | <small>275G</small> | <small>1.01</small> | <small>68.4</small> | <small>276</small> | <small>**2247**</small> | <small>551</small> | <small>N/A</small> | <small>152</small> | <small>**4438**</small> | <small>1958</small> | <small>**9202**</small> | <small>72</small> | <small>N/A</small> |
 
