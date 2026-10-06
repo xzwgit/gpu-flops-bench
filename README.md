@@ -44,7 +44,7 @@ gpu-flops-bench/
 
 ### v2 版（新增检测维度：mma.sync 与 GEMM (cuBLASLt) 双列）
 
-> 2026-10-04 用本工具 v2 在 B300 8 卡、PRO 6000 和 RTX 6000D 上实测。GEMM 列走 cuBLASLt（tcgen05 dispatch），mma 列走 mma.sync 内核（legacy warp-level）。2026-10-06 补充 RTX 3090（SM86）。
+> 2026-10-04 用本工具 v2 在 B300 8 卡、PRO 6000 和 RTX 6000D 上实测。GEMM 列走 cuBLASLt（tcgen05 dispatch），mma 列走 mma.sync 内核（legacy warp-level）。2026-10-06 补充 RTX 3090（SM86）与 RTX 4090（SM89，8 卡实测）。
 
 | <small>GPU</small> | <small>架构</small> | <small>CC</small> | <small>显存</small> | <small>FP64</small> | <small>FP32</small> | <small>TF32</small> | <small>BF16</small> | <small>BF16<br>mma</small> | <small>FP16</small> | <small>INT8</small> | <small>FP8<br>E4M3</small> | <small>FP8<br>E4M3 mma</small> | <small>NVFP4</small> | <small>INT4</small> | <small>FP4<br>E2M1</small> |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -52,6 +52,7 @@ gpu-flops-bench/
 | <small>RTX&nbsp;PRO&nbsp;6000</small> | <small>SM120</small> | <small>12.0</small> | <small>96G</small> | <small>1.53</small> | <small>80.6</small> | <small>225</small> | <small>**457**</small> | <small>462</small> | <small>457</small> | <small>882</small> | <small>**906**</small> | <small>924</small> | <small>**1619**</small> | <small>235</small> | <small>924</small> |
 | <small>RTX&nbsp;6000D</small> | <small>SM120</small> | <small>12.0</small> | <small>84G</small> | <small>1.28</small> | <small>66.7</small> | <small>72</small> | <small>**176**</small> | <small>146</small> | <small>144</small> | <small>472</small> | <small>**386**</small> | <small>291</small> | <small>**947**</small> | <small>141</small> | <small>379</small> |
 | <small>RTX&nbsp;3090</small> | <small>SM86</small> | <small>8.6</small> | <small>24G</small> | <small>0.57</small> | <small>30.1</small> | <small>41</small> | <small>**83**</small> | <small>83</small> | <small>83</small> | <small>307</small> | <small>N/A</small> | <small>N/A</small> | <small>N/A</small> | <small>661</small> | <small>N/A</small> |
+| <small>RTX&nbsp;4090</small> | <small>SM89</small> | <small>8.9</small> | <small>24G</small> | <small>1.25</small> | <small>57.2</small> | <small>89</small> | <small>**178**</small> | <small>181</small> | <small>175</small> | <small>672</small> | <small>**352**</small> | <small>360</small> | <small>N/A</small> | <small>1434</small> | <small>N/A</small> |
 
 > 单位: TFLOPS（INT8/INT4 为 TOPS）
 > B300 8 卡一致性：BF16 2233-2235、NVFP4 10360-10476（±0.2%）；8 卡 concurrent 聚合线性度≥99.7%
@@ -64,6 +65,7 @@ gpu-flops-bench/
 > - **B300 低精度整数全面弱项**：INT8 = 151 TOPS（vs PRO 6000 的 882，仅 17%）、**INT4 = 74 TOPS（vs PRO 6000 的 235，仅 31%）**——SM103 上低精度整数（INT8/INT4）的 mma.sync 和 cuBLASLt 路径均无 tcgen05 dispatch，与 BF16/FP8 高精度路径形成鲜明对比。8-bit 以下量化推理在 B300 上应用 FP8 E4M3（4377 TFLOPS）或 NVFP4（10441 TFLOPS）替代
 > - **FP4 E2M1**：PRO 6000 有值 924（CC 12.0 的 mma.sync kind::f8f6f4），B300 N/A（CC 10.3）
 > - **RTX 3090（SM86，2026-10-06 补测）**：BF16 GEMM ≈ mma（83 ≈ 83）——Ampere 与 SM120 一样 mma.sync 满速，legacy 路径不降档；**INT4 661 = 2× INT8 GEMM（307）**，Ampere 时代 INT4 仍是满速加速路径（对照 SM120 的 INT4 235/141、SM103 的 74 全面降速）；FP8/NVFP4/FP4 需 CC 8.9+/12.0+，均 N/A；FP32 走 SGEMM 30.1（访存受限，低于理论 FMA 峰值属正常口径差异）
+> - **RTX 4090（SM89，128 SM，8 卡一致性 ±1.7%）**：mma/GEMM 比值 BF16 1.02（181/178）、FP8 1.02（360/352）——**Ada 与 Ampere/SM120 同属"mma.sync 满速"阵营，四代里只有数据中心 SM103 把 legacy 路径降档**。**INT4 mma = 1434 TOPS ≈ 2.1× 其 INT8（672）**——Ada 延续 4-bit 传统 2× 收益，至此三代对照完整：Ampere 661（2.2×）/Ada 1434（2.1×）/**Blackwell 74~235（0.08~0.27×，INT4 mma 快路径在 Blackwell 上被砍掉两个数量级，低比特整数全面让位 FP8/NVFP4）**。NVFP4/FP4 E2M1 在 SM89 均无路径（N/A）
 > - INT8 F32acc（混合精度）在 B300 上仅 40 TOPS，比 INT32I 还差——证实不是计算类型问题，是 INT8 整体无 tcgen05 路径
 
 ### AMD（待测）
