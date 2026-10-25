@@ -84,7 +84,7 @@ gpu-flops-bench/
 | <small>GPU</small> | <small>架构</small> | <small>CC</small> | <small>显存</small> | <small>FP64</small> | <small>FP32</small> | <small>TF32</small> | <small>BF16</small> | <small>BF16<br>mma</small> | <small>FP16</small> | <small>INT8</small> | <small>FP8<br>E4M3</small> | <small>FP8<br>E4M3 mma</small> | <small>NVFP4</small> | <small>INT4</small> | <small>FP4<br>E2M1</small> |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | <small>RTX&nbsp;4090&nbsp;48G&nbsp;解锁</small> | <small>SM89</small> | <small>8.9</small> | <small>48G</small> | <small>1.2</small> | <small>56.7</small> | <small>151</small> | <small>191</small> | <small>346</small> | <small>233</small> | <small>608</small> | <small>526</small> | <small>715</small> | <small>N/A</small> | <small>1428</small> | <small>N/A</small> |
-| <small>RTX&nbsp;3090&nbsp;锁定</small> | <small>SM86</small> | <small>8.6</small> | <small>24G</small> | <small>0.57</small> | <small>30.1</small> | <small>41</small> | <small>82</small> | <small>83</small> | <small>82</small> | <small>296</small> | <small>N/A</small> | <small>N/A</small> | <small>N/A</small> | <small>658</small> | <small>N/A</small> |
+| <small>RTX&nbsp;3090&nbsp;锁定</small> | <small>SM86</small> | <small>8.6</small> | <small>24G</small> | <small>0.56</small> | <small>30.1</small> | <small>41</small> | <small>82</small> | <small>83</small> | <small>82</small> | <small>296</small> | <small>N/A</small> | <small>N/A</small> | <small>N/A</small> | <small>661</small> | <small>N/A</small> |
 | <small>RTX&nbsp;3090&nbsp;解锁</small> | <small>SM86</small> | <small>8.6</small> | <small>24G</small> | <small>0.57</small> | <small>30.0</small> | <small>77</small> | <small>144</small> | <small>165</small> | <small>145</small> | <small>294</small> | <small>N/A</small> | <small>N/A</small> | <small>N/A</small> | <small>661</small> | <small>N/A</small> |
 
 > 单位: TFLOPS（INT8/INT4 为 TOPS）
@@ -98,7 +98,7 @@ gpu-flops-bench/
 > 口径一致）：GEMM 列 TF32 41→77（×1.87）、BF16 82→144（×1.76）、FP16
 > 82→145（×1.77）；解锁态 16384³ 时 BF16/FP16 可达 158/159（×1.9，解锁后
 > 大矩阵更优）。mma 列 BF16 83→165（×2.0）。对照组 FP64/FP32/INT8
-> （296→294）/INT8 mma（330→331）/INT4（658→661）持平，输出校验全部
+> （296→294）/INT8 mma（331→331）/INT4（661→661）持平，输出校验全部
 > PASS。FP8/NVFP4/FP4 E2M1 在 SM86 无路径（N/A）。
 > 解锁操作与同机 A/B 实录存内部私有仓，此处仅登记实测结果。
 
