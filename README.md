@@ -78,16 +78,16 @@ gpu-flops-bench/
 > （FP64 为 4096³），`--quick` 模式。v2 表的 RTX 4090（24G 零售卡）为
 > 未解锁参考：
 
-| <small>GPU</small> | <small>架构</small> | <small>CC</small> | <small>显存</small> | <small>FP64</small> | <small>FP32</small> | <small>TF32</small> | <small>BF16</small> | <small>FP16</small> | <small>INT8</small> | <small>E4M3</small> | <small>NVFP4</small> |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| <small>RTX&nbsp;4090&nbsp;48G&nbsp;解锁</small> | <small>Ada&nbsp;Lovelace</small> | <small>8.9</small> | <small>48G</small> | <small>1.2</small> | <small>56.7</small> | <small>151</small> | <small>191</small> | <small>233</small> | <small>608</small> | <small>526</small> | <small>—</small> |
+| <small>GPU</small> | <small>架构</small> | <small>CC</small> | <small>显存</small> | <small>FP64</small> | <small>FP32</small> | <small>TF32</small> | <small>BF16</small> | <small>FP16</small> | <small>INT8</small> | <small>E4M3</small> | <small>NVFP4</small> | <small>INT4</small> |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| <small>RTX&nbsp;4090&nbsp;48G&nbsp;解锁</small> | <small>Ada&nbsp;Lovelace</small> | <small>8.9</small> | <small>48G</small> | <small>1.2</small> | <small>56.7</small> | <small>151</small> | <small>191</small> | <small>233</small> | <small>608</small> | <small>526</small> | <small>—</small> | <small>1428</small> |
 
-> 单位: TFLOPS（INT8 为 TOPS）。NVFP4 需 Blackwell（CC 10.0+），— 表示无路径。
+> 单位: TFLOPS（INT8/INT4 为 TOPS）。NVFP4 需 Blackwell（CC 10.0+），— 表示无路径。
+> INT4 为 mma.sync 发射率内核路径（`--precisions int4`，cuBLASLt 不提供 INT4 稠密
+> GEMM 内核），与 v2 表锁定态 1434 持平——整数路径不受该解锁影响。
 > 相对未解锁参考（v2 表 24G 零售卡）：TF32 89→151、FP16 175→233、BF16 178→191、
 > E4M3 352→526；INT8/FP64/FP32 变化在跨机（48G 改装 vs 24G 零售）差异范围内，
 > 整数与 CUDA Core 路径不受该发射限制影响。
-> INT4 走 mma.sync 路径（`--precisions int4`，非 cuBLASLt）：解锁后实测 1428 TOPS，
-> 与 v2 表锁定态 1434 持平——整数路径不受该解锁影响。
 > 解锁操作与同机 A/B 实录存内部私有仓，此处仅登记实测结果。
 
 ### AMD（待测）
