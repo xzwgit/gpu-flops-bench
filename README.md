@@ -70,17 +70,22 @@ gpu-flops-bench/
 > - **RTX 4090（SM89，128 SM，8 卡一致性 ±1.7%）**：mma/GEMM 比值 BF16 1.02（181/178）、FP8 1.02（360/352）——**Ada 与 Ampere/SM120 同属"mma.sync 满速"阵营，四代里只有数据中心 SM103 把 legacy 路径降档**。**INT4 mma = 1434 TOPS ≈ 2.1× 其 INT8（672）**——Ada 延续 4-bit 传统 2× 收益，至此三代对照完整：Ampere 661（2.2×）/Ada 1434（2.1×）/**Blackwell 74~235（0.08~0.27×，INT4 mma 快路径在 Blackwell 上被砍掉两个数量级，低比特整数全面让位 FP8/NVFP4）**。NVFP4/FP4 E2M1 在 SM89 均无路径（N/A）
 > - INT8 F32acc（混合精度）在 B300 上仅 40 TOPS，比 INT32I 还差——证实不是计算类型问题，是 INT8 整体无 tcgen05 路径
 
-### Tensor 发射限速解锁：RTX 4090 48G（2026-10-25）
+### Tensor 发射限速解锁（RTX 4090 48G · RTX 3090，2026-10-25）
 
 > 测试机：8 × RTX 4090 48G（改装，10de:2684，驱动 595.71.05，CUDA 13.2），
 > GPU 侧 FEAT_OVR_PLM 的 SM 发射率限制（FP16/BF16/TF32 Tensor 路径限半速
 > 档位）已解除。GEMM 列为 cuBLASLt isolated 单卡中位数（矩阵 8192³，FP64 为
 > 4096³，`--quick`）；mma 列为 mma.sync 发射率内核（`--precisions *_mma` /
 > `int4`）。v2 表的 RTX 4090（24G 零售卡）为未解锁参考：
+> 另一台测试机：单卡 RTX 3090（GA102 零售卡，ASUS，功耗墙 390W，驱动
+> 615.78.08，CUDA 13.3），gpu-unlock v1.0.0 同机冷启动切换锁定/解锁做 A/B，
+> 口径同上（GEMM 8192³ 完整模式，FP64 6144³）：
 
 | <small>GPU</small> | <small>架构</small> | <small>CC</small> | <small>显存</small> | <small>FP64</small> | <small>FP32</small> | <small>TF32</small> | <small>BF16</small> | <small>BF16<br>mma</small> | <small>FP16</small> | <small>INT8</small> | <small>FP8<br>E4M3</small> | <small>FP8<br>E4M3 mma</small> | <small>NVFP4</small> | <small>INT4</small> | <small>FP4<br>E2M1</small> |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | <small>RTX&nbsp;4090&nbsp;48G&nbsp;解锁</small> | <small>SM89</small> | <small>8.9</small> | <small>48G</small> | <small>1.2</small> | <small>56.7</small> | <small>151</small> | <small>191</small> | <small>346</small> | <small>233</small> | <small>608</small> | <small>526</small> | <small>715</small> | <small>N/A</small> | <small>1428</small> | <small>N/A</small> |
+| <small>RTX&nbsp;3090&nbsp;锁定</small> | <small>SM86</small> | <small>8.6</small> | <small>24G</small> | <small>0.57</small> | <small>30.0</small> | <small>41</small> | <small>83</small> | <small>83</small> | <small>82</small> | <small>306</small> | <small>N/A</small> | <small>N/A</small> | <small>N/A</small> | <small>658</small> | <small>N/A</small> |
+| <small>RTX&nbsp;3090&nbsp;解锁</small> | <small>SM86</small> | <small>8.6</small> | <small>24G</small> | <small>0.57</small> | <small>30.0</small> | <small>77</small> | <small>158</small> | <small>165</small> | <small>159</small> | <small>307</small> | <small>N/A</small> | <small>N/A</small> | <small>N/A</small> | <small>661</small> | <small>N/A</small> |
 
 > 单位: TFLOPS（INT8/INT4 为 TOPS）
 > 相对未解锁参考（v2 表 24G 零售卡）：GEMM 列 TF32 89→151、FP16 175→233、
@@ -89,6 +94,11 @@ gpu-flops-bench/
 > 672→608、INT4 1434→1428、FP64/FP32 变化在跨机（48G 改装 vs 24G 零售）
 > 差异范围内，整数与 CUDA Core 路径不受该发射限制影响。NVFP4/FP4 E2M1
 > 在 SM89 无路径（N/A）。
+> RTX 3090 解锁 vs 锁定（同机同日）：GEMM 列 TF32 41→77（×1.87）、BF16
+> 83→158（×1.91）、FP16 82→159（×1.93）；mma 列 BF16 83→165（×2.0）——
+> 390W 功耗墙下 GEMM 层面即兑现近 ×2。对照组 FP64/FP32/INT8（306→307）/
+> INT8 mma（330→331）/INT4（658→661）持平，输出校验全部 PASS。FP8/NVFP4/
+> FP4 E2M1 在 SM86 无路径（N/A）。
 > 解锁操作与同机 A/B 实录存内部私有仓，此处仅登记实测结果。
 
 ### AMD（待测）

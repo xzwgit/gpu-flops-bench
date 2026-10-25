@@ -1,0 +1,51 @@
+mode,device_id,gpu_name,compute_capability,precision,input_type,accumulator_type,output_type,m,n,k,median_ms,p90_ms,throughput,unit,best,validation,status,algorithm,workspace_bytes,message
+isolated,0,NVIDIA GeForce RTX 3090,8.6,fp64,FP64,FP64,FP64,2048,2048,2048,30.746624,30.756672,0.558756,TFLOPS,False,PASS,OK,cuBLASLt algo 22 layout=NN per-tensor scale,0,"actual=512, expected=512, tolerance=1e-06"
+isolated,0,NVIDIA GeForce RTX 3090,8.6,fp64,FP64,FP64,FP64,4096,4096,4096,245.830658,245.931107,0.559080,TFLOPS,False,PASS,OK,cuBLASLt algo 22 layout=NN per-tensor scale,0,"actual=1024, expected=1024, tolerance=1e-06"
+isolated,0,NVIDIA GeForce RTX 3090,8.6,fp64,FP64,FP64,FP64,6144,6144,6144,819.981079,819.982361,0.565692,TFLOPS,True,PASS,OK,cuBLASLt algo 22 layout=NN per-tensor scale,0,"actual=1536, expected=1536, tolerance=1e-06"
+isolated,0,NVIDIA GeForce RTX 3090,8.6,fp32,FP32,FP32,FP32,4096,4096,4096,5.022720,5.024768,27.363452,TFLOPS,False,PASS,OK,cuBLASLt algo 20 layout=NN per-tensor scale,0,"actual=1024, expected=1024, tolerance=0.01024"
+isolated,0,NVIDIA GeForce RTX 3090,8.6,fp32,FP32,FP32,FP32,8192,8192,8192,36.708351,37.314495,29.952629,TFLOPS,True,PASS,OK,cuBLASLt algo 20 layout=NN per-tensor scale,8192,"actual=2048, expected=2048, tolerance=0.02048"
+isolated,0,NVIDIA GeForce RTX 3090,8.6,fp32,FP32,FP32,FP32,12288,12288,12288,128.914429,129.565689,28.785387,TFLOPS,False,PASS,OK,cuBLASLt algo 20 layout=NN per-tensor scale,0,"actual=3072, expected=3072, tolerance=0.03072"
+isolated,0,NVIDIA GeForce RTX 3090,8.6,tf32,FP32,FP32,FP32,4096,4096,4096,2.057216,2.106368,66.808229,TFLOPS,False,PASS,OK,cuBLASLt algo 21 layout=NN per-tensor scale,0,"actual=1024, expected=1024, tolerance=30.72"
+isolated,0,NVIDIA GeForce RTX 3090,8.6,tf32,FP32,FP32,FP32,8192,8192,8192,14.291968,14.295968,76.932134,TFLOPS,True,PASS,OK,cuBLASLt algo 21 layout=NN per-tensor scale,0,"actual=2048, expected=2048, tolerance=61.44"
+isolated,0,NVIDIA GeForce RTX 3090,8.6,tf32,FP32,FP32,FP32,12288,12288,12288,49.156097,49.665920,75.491179,TFLOPS,False,PASS,OK,cuBLASLt algo 21 layout=NN per-tensor scale,0,"actual=3072, expected=3072, tolerance=92.16"
+isolated,0,NVIDIA GeForce RTX 3090,8.6,bf16,BF16,FP32,BF16,4096,4096,4096,0.981728,0.994144,139.996976,TFLOPS,False,PASS,OK,cuBLASLt algo 6 layout=NN per-tensor scale,0,"actual=1024, expected=1024, tolerance=30.72"
+isolated,0,NVIDIA GeForce RTX 3090,8.6,bf16,BF16,FP32,BF16,8192,8192,8192,7.632896,7.635840,144.049079,TFLOPS,False,PASS,OK,cuBLASLt algo 5 layout=NN per-tensor scale,0,"actual=2048, expected=2048, tolerance=61.44"
+isolated,0,NVIDIA GeForce RTX 3090,8.6,bf16,BF16,FP32,BF16,16384,16384,16384,55.598015,55.640064,158.208761,TFLOPS,True,PASS,OK,cuBLASLt algo 21 layout=NN per-tensor scale,0,"actual=4096, expected=4096, tolerance=122.88"
+isolated,0,NVIDIA GeForce RTX 3090,8.6,bf16_mma,MMA_SYNC,FP32,FP32,0,0,0,0.000000,0.000000,165.492261,TFLOPS,True,OK,OK,,0,
+isolated,0,NVIDIA GeForce RTX 3090,8.6,fp16,FP16,FP32,FP16,4096,4096,4096,0.973824,0.988096,141.133254,TFLOPS,False,PASS,OK,cuBLASLt algo 6 layout=NN per-tensor scale,0,"actual=1024, expected=1024, tolerance=30.72"
+isolated,0,NVIDIA GeForce RTX 3090,8.6,fp16,FP16,FP32,FP16,8192,8192,8192,7.563264,7.572480,145.375283,TFLOPS,False,PASS,OK,cuBLASLt algo 5 layout=NN per-tensor scale,0,"actual=2048, expected=2048, tolerance=61.44"
+isolated,0,NVIDIA GeForce RTX 3090,8.6,fp16,FP16,FP32,FP16,16384,16384,16384,55.316479,55.557888,159.013972,TFLOPS,True,PASS,OK,cuBLASLt algo 21 layout=NN per-tensor scale,0,"actual=4096, expected=4096, tolerance=122.88"
+isolated,0,NVIDIA GeForce RTX 3090,8.6,int8,INT8,INT32,INT32,4096,4096,4096,0.555008,0.561152,247.634187,TOPS,False,PASS,OK,cuBLASLt algo 21 layout=TN per-tensor scale,0,"actual=4096, expected=4096, tolerance=1e-06"
+isolated,0,NVIDIA GeForce RTX 3090,8.6,int8,INT8,INT32,INT32,8192,8192,8192,3.737600,3.743744,294.175835,TOPS,False,PASS,OK,cuBLASLt algo 21 layout=TN per-tensor scale,0,"actual=8192, expected=8192, tolerance=1e-06"
+isolated,0,NVIDIA GeForce RTX 3090,8.6,int8,INT8,INT32,INT32,16384,16384,16384,28.608513,28.825600,307.464182,TOPS,True,PASS,OK,cuBLASLt algo 21 layout=TN per-tensor scale,0,"actual=16384, expected=16384, tolerance=1e-06"
+isolated,0,NVIDIA GeForce RTX 3090,8.6,int8_mma,MMA_SYNC,FP32,FP32,0,0,0,0.000000,0.000000,331.024922,TFLOPS,True,OK,OK,,0,
+isolated,0,NVIDIA GeForce RTX 3090,8.6,fp8_e4m3,,,,0,0,0,0.000000,0.000000,0.000000,,False,NOT_RUN,UNSUPPORTED,,0,Requires compute capability 8.9 or newer; device is 8.6
+isolated,0,NVIDIA GeForce RTX 3090,8.6,fp8_e4m3_mma,MMA_SYNC,FP32,FP32,0,0,0,0.000000,0.000000,0.000000,TFLOPS,False,Requires compute capability 8.9; device is 8.6,UNSUPPORTED,,0,
+isolated,0,NVIDIA GeForce RTX 3090,8.6,nvfp4,,,,0,0,0,0.000000,0.000000,0.000000,,False,NOT_RUN,UNSUPPORTED,,0,Requires compute capability 10.0 or newer (Blackwell); device is 8.6
+isolated,0,NVIDIA GeForce RTX 3090,8.6,int4,MMA_SYNC,FP32,FP32,0,0,0,0.000000,0.000000,660.992261,TOPS,True,OK,OK,,0,
+isolated,0,NVIDIA GeForce RTX 3090,8.6,fp4_e2m1,MMA_SYNC,FP32,FP32,0,0,0,0.000000,0.000000,0.000000,TFLOPS,False,Requires compute capability 12.0; device is 8.6,UNSUPPORTED,,0,
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,fp64,FP64,FP64,FP64,2048,2048,2048,30.851072,30.852097,0.556865,TFLOPS,False,PASS,OK,cuBLASLt algo 22 layout=NN per-tensor scale,0,"actual=512, expected=512, tolerance=1e-06"
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,fp64,FP64,FP64,FP64,4096,4096,4096,246.687744,246.691833,0.557137,TFLOPS,False,PASS,OK,cuBLASLt algo 22 layout=NN per-tensor scale,0,"actual=1024, expected=1024, tolerance=1e-06"
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,fp64,FP64,FP64,FP64,6144,6144,6144,826.184692,826.192810,0.561444,TFLOPS,True,PASS,OK,cuBLASLt algo 22 layout=NN per-tensor scale,0,"actual=1536, expected=1536, tolerance=1e-06"
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,fp32,FP32,FP32,FP32,4096,4096,4096,5.065664,5.066752,27.131479,TFLOPS,False,PASS,OK,cuBLASLt algo 20 layout=NN per-tensor scale,0,"actual=1024, expected=1024, tolerance=0.01024"
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,fp32,FP32,FP32,FP32,8192,8192,8192,36.867073,37.403488,29.823676,TFLOPS,True,PASS,OK,cuBLASLt algo 20 layout=NN per-tensor scale,8192,"actual=2048, expected=2048, tolerance=0.02048"
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,fp32,FP32,FP32,FP32,12288,12288,12288,129.614746,130.103302,28.629858,TFLOPS,False,PASS,OK,cuBLASLt algo 20 layout=NN per-tensor scale,0,"actual=3072, expected=3072, tolerance=0.03072"
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,tf32,FP32,FP32,FP32,4096,4096,4096,2.061312,2.138976,66.675475,TFLOPS,False,PASS,OK,cuBLASLt algo 21 layout=NN per-tensor scale,0,"actual=1024, expected=1024, tolerance=30.72"
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,tf32,FP32,FP32,FP32,8192,8192,8192,14.355456,14.404608,76.591897,TFLOPS,True,PASS,OK,cuBLASLt algo 21 layout=NN per-tensor scale,0,"actual=2048, expected=2048, tolerance=61.44"
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,tf32,FP32,FP32,FP32,12288,12288,12288,49.353729,49.765152,75.188882,TFLOPS,False,PASS,OK,cuBLASLt algo 21 layout=NN per-tensor scale,0,"actual=3072, expected=3072, tolerance=92.16"
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,bf16,BF16,FP32,BF16,4096,4096,4096,1.010688,1.012736,135.985547,TFLOPS,False,PASS,OK,cuBLASLt algo 6 layout=NN per-tensor scale,0,"actual=1024, expected=1024, tolerance=30.72"
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,bf16,BF16,FP32,BF16,8192,8192,8192,7.626752,7.628800,144.165123,TFLOPS,False,PASS,OK,cuBLASLt algo 5 layout=NN per-tensor scale,0,"actual=2048, expected=2048, tolerance=61.44"
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,bf16,BF16,FP32,BF16,16384,16384,16384,55.627777,56.073215,158.124115,TFLOPS,True,PASS,OK,cuBLASLt algo 21 layout=NN per-tensor scale,0,"actual=4096, expected=4096, tolerance=122.88"
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,bf16_mma,MMA_SYNC,FP32,FP32,0,0,0,0.000000,0.000000,164.241176,TFLOPS,True,OK,OK,,0,
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,fp16,FP16,FP32,FP16,4096,4096,4096,0.982016,0.989184,139.955917,TFLOPS,False,PASS,OK,cuBLASLt algo 6 layout=NN per-tensor scale,0,"actual=1024, expected=1024, tolerance=30.72"
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,fp16,FP16,FP32,FP16,8192,8192,8192,7.628800,7.630848,144.126421,TFLOPS,False,PASS,OK,cuBLASLt algo 5 layout=NN per-tensor scale,0,"actual=2048, expected=2048, tolerance=61.44"
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,fp16,FP16,FP32,FP16,16384,16384,16384,55.567329,56.000511,158.296127,TFLOPS,True,PASS,OK,cuBLASLt algo 21 layout=NN per-tensor scale,0,"actual=4096, expected=4096, tolerance=122.88"
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,int8,INT8,INT32,INT32,4096,4096,4096,0.564224,0.568320,243.589341,TOPS,False,PASS,OK,cuBLASLt algo 21 layout=TN per-tensor scale,0,"actual=4096, expected=4096, tolerance=1e-06"
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,int8,INT8,INT32,INT32,8192,8192,8192,3.766272,3.772416,291.936325,TOPS,False,PASS,OK,cuBLASLt algo 21 layout=TN per-tensor scale,0,"actual=8192, expected=8192, tolerance=1e-06"
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,int8,INT8,INT32,INT32,16384,16384,16384,28.820353,29.044737,305.204213,TOPS,True,PASS,OK,cuBLASLt algo 21 layout=TN per-tensor scale,0,"actual=16384, expected=16384, tolerance=1e-06"
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,int8_mma,MMA_SYNC,FP32,FP32,0,0,0,0.000000,0.000000,328.579138,TFLOPS,True,OK,OK,,0,
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,fp8_e4m3,,,,0,0,0,0.000000,0.000000,0.000000,,False,NOT_RUN,UNSUPPORTED,,0,Requires compute capability 8.9 or newer; device is 8.6
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,fp8_e4m3_mma,MMA_SYNC,FP32,FP32,0,0,0,0.000000,0.000000,0.000000,TFLOPS,False,Requires compute capability 8.9; device is 8.6,UNSUPPORTED,,0,
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,nvfp4,,,,0,0,0,0.000000,0.000000,0.000000,,False,NOT_RUN,UNSUPPORTED,,0,Requires compute capability 10.0 or newer (Blackwell); device is 8.6
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,int4,MMA_SYNC,FP32,FP32,0,0,0,0.000000,0.000000,655.998335,TOPS,True,OK,OK,,0,
+concurrent,0,NVIDIA GeForce RTX 3090,8.6,fp4_e2m1,MMA_SYNC,FP32,FP32,0,0,0,0.000000,0.000000,0.000000,TFLOPS,False,Requires compute capability 12.0; device is 8.6,UNSUPPORTED,,0,
