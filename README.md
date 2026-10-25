@@ -74,20 +74,21 @@ gpu-flops-bench/
 
 > 测试机：8 × RTX 4090 48G（改装，10de:2684，驱动 595.71.05，CUDA 13.2），
 > GPU 侧 FEAT_OVR_PLM 的 SM 发射率限制（FP16/BF16/TF32 Tensor 路径限半速
-> 档位）已解除。cuBLASLt dense GEMM isolated 单卡中位数，矩阵 8192³
-> （FP64 为 4096³），`--quick` 模式。v2 表的 RTX 4090（24G 零售卡）为
-> 未解锁参考：
+> 档位）已解除。GEMM 列为 cuBLASLt isolated 单卡中位数（矩阵 8192³，FP64 为
+> 4096³，`--quick`）；mma 列为 mma.sync 发射率内核（`--precisions *_mma` /
+> `int4`）。v2 表的 RTX 4090（24G 零售卡）为未解锁参考：
 
-| <small>GPU</small> | <small>架构</small> | <small>CC</small> | <small>显存</small> | <small>FP64</small> | <small>FP32</small> | <small>TF32</small> | <small>BF16</small> | <small>FP16</small> | <small>INT8</small> | <small>E4M3</small> | <small>NVFP4</small> | <small>INT4</small> |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| <small>RTX&nbsp;4090&nbsp;48G&nbsp;解锁</small> | <small>Ada&nbsp;Lovelace</small> | <small>8.9</small> | <small>48G</small> | <small>1.2</small> | <small>56.7</small> | <small>151</small> | <small>191</small> | <small>233</small> | <small>608</small> | <small>526</small> | <small>—</small> | <small>1428</small> |
+| <small>GPU</small> | <small>架构</small> | <small>CC</small> | <small>显存</small> | <small>FP64</small> | <small>FP32</small> | <small>TF32</small> | <small>BF16</small> | <small>BF16<br>mma</small> | <small>FP16</small> | <small>INT8</small> | <small>FP8<br>E4M3</small> | <small>FP8<br>E4M3 mma</small> | <small>NVFP4</small> | <small>INT4</small> | <small>FP4<br>E2M1</small> |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| <small>RTX&nbsp;4090&nbsp;48G&nbsp;解锁</small> | <small>SM89</small> | <small>8.9</small> | <small>48G</small> | <small>1.2</small> | <small>56.7</small> | <small>151</small> | <small>191</small> | <small>346</small> | <small>233</small> | <small>608</small> | <small>526</small> | <small>715</small> | <small>N/A</small> | <small>1428</small> | <small>N/A</small> |
 
-> 单位: TFLOPS（INT8/INT4 为 TOPS）。NVFP4 需 Blackwell（CC 10.0+），— 表示无路径。
-> INT4 为 mma.sync 发射率内核路径（`--precisions int4`，cuBLASLt 不提供 INT4 稠密
-> GEMM 内核），与 v2 表锁定态 1434 持平——整数路径不受该解锁影响。
-> 相对未解锁参考（v2 表 24G 零售卡）：TF32 89→151、FP16 175→233、BF16 178→191、
-> E4M3 352→526；INT8/FP64/FP32 变化在跨机（48G 改装 vs 24G 零售）差异范围内，
-> 整数与 CUDA Core 路径不受该发射限制影响。
+> 单位: TFLOPS（INT8/INT4 为 TOPS）
+> 相对未解锁参考（v2 表 24G 零售卡）：GEMM 列 TF32 89→151、FP16 175→233、
+> BF16 178→191、E4M3 352→526；mma 列 BF16 181→346（×1.9）、E4M3 360→715
+> （×2.0）——发射率层面 ×2 复现，GEMM 层面受功率墙只兑现一部分。INT8
+> 672→608、INT4 1434→1428、FP64/FP32 变化在跨机（48G 改装 vs 24G 零售）
+> 差异范围内，整数与 CUDA Core 路径不受该发射限制影响。NVFP4/FP4 E2M1
+> 在 SM89 无路径（N/A）。
 > 解锁操作与同机 A/B 实录存内部私有仓，此处仅登记实测结果。
 
 ### AMD（待测）
