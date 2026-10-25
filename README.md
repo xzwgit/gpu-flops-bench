@@ -100,6 +100,10 @@ gpu-flops-bench/
 > 大矩阵更优）。mma 列 BF16 83→165（×2.0）。对照组 FP64/FP32/INT8
 > （296→294）/INT8 mma（331→331）/INT4（661→661）持平，输出校验全部
 > PASS。FP8/NVFP4/FP4 E2M1 在 SM86 无路径（N/A）。
+> 2026-10-25 晚独立 quick 复测（`--quick`，两次冷启动切换两态）完全复现：
+> TF32 ×1.88、BF16 GEMM ×1.76、BF16 mma ×1.99、INT8/INT4/INT8 mma 持平，
+> 与已登记值差 ≤±2.4%（quick 与完整模式的固有噪声）。数据见
+> `nvidia/results/3090_quick_locked/`、`3090_quick_unlocked/` 及比对说明。
 > 解锁操作与同机 A/B 实录存内部私有仓，此处仅登记实测结果。
 
 ### AMD（待测）
