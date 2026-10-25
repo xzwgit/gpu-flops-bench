@@ -70,6 +70,25 @@ gpu-flops-bench/
 > - **RTX 4090（SM89，128 SM，8 卡一致性 ±1.7%）**：mma/GEMM 比值 BF16 1.02（181/178）、FP8 1.02（360/352）——**Ada 与 Ampere/SM120 同属"mma.sync 满速"阵营，四代里只有数据中心 SM103 把 legacy 路径降档**。**INT4 mma = 1434 TOPS ≈ 2.1× 其 INT8（672）**——Ada 延续 4-bit 传统 2× 收益，至此三代对照完整：Ampere 661（2.2×）/Ada 1434（2.1×）/**Blackwell 74~235（0.08~0.27×，INT4 mma 快路径在 Blackwell 上被砍掉两个数量级，低比特整数全面让位 FP8/NVFP4）**。NVFP4/FP4 E2M1 在 SM89 均无路径（N/A）
 > - INT8 F32acc（混合精度）在 B300 上仅 40 TOPS，比 INT32I 还差——证实不是计算类型问题，是 INT8 整体无 tcgen05 路径
 
+### Tensor 发射限速解锁：RTX 4090 48G ×8（2026-10-25）
+
+> 8 × RTX 4090 48G（改装，10de:2684，驱动 595.71.05，CUDA 13.2）。
+> 该机 GPU 侧 FEAT_OVR_PLM 的 SM 发射率限制（FP16/BF16/TF32 Tensor 路径
+> 限半速的 fuse 档位）已解除后实测；上表 v2 的 RTX 4090（24G 零售卡）为
+> 未解锁参考。cuBLASLt dense GEMM isolated（GPU 0 中位数），矩阵 8192³
+> （FP64 为 4096³），`--quick` 模式：
+
+| <small>GPU</small> | <small>架构</small> | <small>CC</small> | <small>显存</small> | <small>FP64</small> | <small>FP32</small> | <small>TF32</small> | <small>BF16</small> | <small>FP16</small> | <small>INT8</small> | <small>E4M3</small> | <small>NVFP4</small> |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| <small>RTX&nbsp;4090&nbsp;48G&nbsp;×8&nbsp;解锁&nbsp;(isolated)</small> | <small>Ada&nbsp;Lovelace</small> | <small>8.9</small> | <small>48G</small> | <small>1.2</small> | <small>56.7</small> | <small>151</small> | <small>191</small> | <small>233</small> | <small>608</small> | <small>526</small> | <small>—</small> |
+| <small>同上&nbsp;(8&nbsp;卡并发合计)</small> | | | | <small>9.8</small> | <small>451</small> | <small>1186</small> | <small>1473</small> | <small>1873</small> | <small>4874</small> | <small>4111</small> | <small>—</small> |
+
+> 单位: TFLOPS（INT8 为 TOPS）。NVFP4 需 Blackwell，— 表示无路径。
+> 相对未解锁参考（v2 表 24G 零售卡 4090）：TF32 89→151、FP16 175→233、BF16 178→191、
+> E4M3 352→526；INT8/FP64/FP32 变化在跨机（48G 改装 vs 24G 零售）差异范围内，
+> 整数与 CUDA Core 路径不受该发射限制影响。
+> 解锁操作与同机 A/B 实录存内部私有仓，此处仅登记实测结果。
+
 ### AMD（待测）
 
 | GPU | 架构 | 状态 |
