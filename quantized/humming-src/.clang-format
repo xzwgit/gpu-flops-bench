@@ -1,0 +1,18 @@
+ColumnLimit: 0
+
+AlwaysBreakTemplateDeclarations: Yes
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+BreakConstructorInitializers: BeforeColon
+MaxEmptyLinesToKeep: 2
+AlignAfterOpenBracket: DontAlign
+ContinuationIndentWidth: 4
+ExperimentalAutoDetectBinPacking: false
+IndentCaseLabels: true
+
+AllowShortBlocksOnASingleLine: Always
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: All
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowAllConstructorInitializersOnNextLine: false
+AllowAllArgumentsOnNextLine: true

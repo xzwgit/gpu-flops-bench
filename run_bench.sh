@@ -1,10 +1,17 @@
 #!/usr/bin/env bash
 # gpu-flops-bench 统一入口 - 自动检测 GPU 厂商并调用对应工具
 # 用法: bash run_bench.sh [选项]  (选项透传给子工具)
+#   --quant         量化推理吞吐基准 (Humming 引擎, 需 PyTorch+nvcc)
 #   --quick         快速模式
 #   --device N      只测指定 GPU
 #   --gpus all      测所有 GPU (默认)
 set -euo pipefail
+
+# --quant: 量化推理吞吐基准 (Humming 引擎)
+if [[ "${1:-}" == "--quant" ]]; then
+    shift
+    exec bash "$(dirname "$0")/quantized/run_quant_bench.sh" "$@"
+fi
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 

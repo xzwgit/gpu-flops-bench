@@ -146,6 +146,32 @@ cd amd
 bash run_gpu_flops.sh           # 待实现
 ```
 
+### 量化推理吞吐（Humming 引擎）
+
+硬件峰值之外的第二个维度：**W4A16 / W8A8 / MXFP4×FP8 量化 GEMM 有效吞吐**，
+以 BF16 cuBLAS 为基线。衡量的是推理框架实际可达的量化计算性能（含核内反量化、
+scale 融合开销），与上层 cuBLASLt 峰值互补。
+
+```bash
+bash run_bench.sh --quant                          # GPU 0, N=K=4096, M 扫 1..4096
+bash run_bench.sh --quant --device 6 --ms 1 64 1024 4096
+```
+
+- 引擎：[Humming](https://github.com/vllm-project/humming)（Apache-2.0），
+  源码已内置 `quantized/humming-src/`（pin commit 见其 VENDORED.md），无需 pip 安装
+- 环境：PyTorch（建议 cu130+）+ CUDA 工具链（nvcc，JIT 编译）+ `pip install triton tqdm`
+- 结果写入 `results/<时间戳>-quant/quant_report.{md,csv}`
+- 支持 SM75 (Turing) 起的全部架构；多卡用 `--device N`
+
+RTX 4090（解锁态）参考值，N=K=4096，有效 TFLOPS = 2MNK/t：
+
+| M | W4A16 | W8A8 | MXFP4×FP8 | BF16 cuBLAS |
+|---|---|---|---|---|
+| 1 | 1.7 | 1.1 | 1.7 | 1.4 |
+| 64 | 83.7 | 52.7 | 73.6 | 77.9 |
+| 1024 | 278.6 | 329.7 | 277.2 | 234.6 |
+| 4096 | 275.0 | 375.4 | 142.7 | 195.1 |
+
 ## 测新 GPU 后的操作步骤
 
 详见 [nvidia/GPU_TEST_CHECKLIST.md](nvidia/GPU_TEST_CHECKLIST.md)
