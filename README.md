@@ -77,7 +77,7 @@ gpu-flops-bench/
 | <small>GPU</small> | <small>架构</small> | <small>CC</small> | <small>显存</small> | <small>FP64</small> | <small>FP32</small> | <small>TF32</small> | <small>BF16</small> | <small>BF16<br>mma</small> | <small>FP16</small> | <small>INT8</small> | <small>FP8<br>E4M3</small> | <small>FP8<br>E4M3 mma</small> | <small>NVFP4</small> | <small>INT4</small> | <small>FP4<br>E2M1</small> | <small>FP8<br>E3M4</small> | <small>FP4<br>E0M3</small> |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | <small>B300&nbsp;SXM6&nbsp;AC</small> | <small>SM103</small> | <small>10.3</small> | <small>275G</small> | <small>1.05</small> | <small>68.8</small> | <small>**1101**</small> | <small>**2235**</small> | <small>551</small> | <small>**2235**</small> | <small>151</small> | <small>**4377**</small> | <small>1958</small> | <small>**10441**</small> | <small>74</small> | <small>N/A</small> | <small>N/A</small> | <small>N/A</small> |
-| <small>RTX&nbsp;PRO&nbsp;6000</small> | <small>SM120</small> | <small>12.0</small> | <small>96G</small> | <small>1.53</small> | <small>80.6</small> | <small>225</small> | <small>**457**</small> | <small>462</small> | <small>457</small> | <small>882</small> | <small>**906**</small> | <small>924</small> | <small>**1619**</small> | <small>235</small> | <small>924</small> | <small>—</small> | <small>—</small> |
+| <small>RTX&nbsp;PRO&nbsp;6000</small> | <small>SM120</small> | <small>12.0</small> | <small>96G</small> | <small>1.53</small> | <small>80.6</small> | <small>225</small> | <small>**457**</small> | <small>462</small> | <small>457</small> | <small>882</small> | <small>**906**</small> | <small>924</small> | <small>**1619**</small> | <small>235</small> | <small>924</small> | <small>928</small> | <small>194</small> |
 | <small>RTX&nbsp;5090</small> | <small>SM120</small> | <small>12.0</small> | <small>32G</small> | <small>1.8</small> | <small>83.2</small> | <small>126</small> | <small>254</small> | <small>253</small> | <small>254</small> | <small>906</small> | <small>774</small> | <small>506</small> | <small>**1617**</small> | <small>151</small> | <small>503</small> | <small>504</small> | <small>177</small> |
 | <small>RTX&nbsp;6000D</small> | <small>SM120</small> | <small>12.0</small> | <small>84G</small> | <small>1.28</small> | <small>66.7</small> | <small>72</small> | <small>**176**</small> | <small>146</small> | <small>144</small> | <small>472</small> | <small>**386**</small> | <small>291</small> | <small>**947**</small> | <small>141</small> | <small>379</small> | <small>289</small> | <small>141</small> |
 | <small>RTX&nbsp;4090</small> | <small>SM89</small> | <small>8.9</small> | <small>24G</small> | <small>1.25</small> | <small>57.2</small> | <small>89</small> | <small>**178**</small> | <small>181</small> | <small>175</small> | <small>672</small> | <small>**352**</small> | <small>360</small> | <small>N/A</small> | <small>1434</small> | <small>N/A</small> | <small>N/A</small> | <small>N/A</small> |
@@ -86,11 +86,11 @@ gpu-flops-bench/
 > 单位: TFLOPS（INT8/INT4 为 TOPS）。E3M4/E0M3 列 = mma 发射率（cubin 补丁路径）。
 >
 > **发现与口径**：
-> - **E3M4 与 E4M3 同槽同速率**：6000D 289 vs 291（mma）、5090 504 vs 506——隐藏格式拿到的是新数值编码而非新算力。E3M4 多 1 位尾数（相对精度 3.1% vs 6.25%），量化误差减半但动态范围窄（±31 vs ±448）
-> - **E0M3 = 整数值语义的 FP4**（≈对称 INT4 的浮点编码）：可让 INT4 量化权重骑上 FP4 原生路径——6000D 上 141 vs INT4 遗留路径 141 持平，但 5090 上 177 vs INT4 的 151 高 17%；对照 FP4 E2M1 mma（6000D 379）仍是 block-scale 开销减半档
+> - **E3M4 与 E4M3 同槽同速率**：PRO 6000 928 vs 887、6000D 289 vs 291、5090 504 vs 506（±5% 内）——隐藏格式拿到的是新数值编码而非新算力。E3M4 多 1 位尾数（相对精度 3.1% vs 6.25%），量化误差减半但动态范围窄（±31 vs ±448）
+> - **E0M3 = 整数值语义的 FP4**（≈对称 INT4 的浮点编码）：可让 INT4 量化权重骑上 FP4 原生路径——**PRO 6000 上 194 vs INT4 遗留路径 138（+40%）、5090 上 177 vs 151（+17%）**、6000D 141 vs 141 持平；对照 FP4 E2M1 mma（PRO 6000 923）仍是 block-scale 开销减半档
 > - **仅 SM120/121 可达**：SM89/SM86 无此硬件；SM103 (B300) 按 Humming 文章有 tcgen05 描述符路径但 cuda-u 未实现，暂 N/A
-> - PRO 6000 的 — 为未测（本轮测试窗口机器不可达），mma 侧预期与 6000D 同源（同为 SM120 满血）
-> - 路线与编码发现：[Humming](https://github.com/vllm-project/humming)（Apache-2.0）；测量工具：[cuda-u](https://github.com/xzwgit/cuda-u) v0.0.3（2026-10-27，6000D@10.10.3.157 / 5090@10.0.1.116 / 4090@10.0.1.92 解锁态）
+> - PRO 6000 E3M4/E0M3 取自 Server Edition（10.10.3.155，188 SM，600W，CUDA 13.0），同机 mma 侧交叉验证：BF16 444/449、FP8 887/892、NVFP4 1590，与表2 工作站版数值（462/924/1619）同量级
+> - 路线与编码发现：[Humming](https://github.com/vllm-project/humming)（Apache-2.0）；测量工具：[cuda-u](https://github.com/xzwgit/cuda-u) v0.0.3（2026-10-27，PRO 6000@10.10.3.155 / 6000D@10.10.3.157 / 5090@10.0.1.116 / 4090@10.0.1.92 解锁态）
 
 ### Tensor 发射限速解锁（RTX 4090 48G · RTX 3090，2026-10-25）
 
