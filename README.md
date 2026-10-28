@@ -27,12 +27,12 @@ gpu-flops-bench/
 ### NVIDIA 汇总表（11 款 + 2 解锁态，cuda-u v0.0.3 统一口径，2026-10-27）
 
 > **一张表合并历次实测**（v1 cuBLASLt GEMM / v2 双列 / 解锁 A/B / 隐藏格式）。
-> 数据源三档：① cuda-u 0.0.3 实测行（PRO 6000@10.10.3.155 Server Edition、5090@10.0.1.116、6000D@10.10.3.157、4090 解锁@10.0.1.92）——mma/GEMM/隐藏格式全套；② 解锁 A/B 行（3090 锁定/解锁，2026-10-25）；③ v1 GEMM 行（B300/H200/PRO 5000/5090D v2/GB10/3060，未跑 0.0.3，mma 与隐藏列未测）。
+> 数据源三档：① cuda-u 0.0.3 实测行（B300@10.10.3.55、PRO 6000@10.10.3.155 Server Edition、5090@10.0.1.116、6000D@10.10.3.157、4090 解锁@10.0.1.92）——mma/GEMM/隐藏格式全套；② 解锁 A/B 行（3090 锁定/解锁，2026-10-25）；③ v1 GEMM 行（H200/PRO 5000/5090D v2/GB10/3060，未跑 0.0.3，mma 与隐藏列未测）。
 > 口径：BF16/INT8/E4M3/NVFP4 列 = cuBLASLt GEMM；带 mma 后缀及 INT4/FP4 列 = mma.sync 发射率；0.0.3 行的 TF32/FP16 为 mma 口径（cuda-u 无此二者的 GEMM 列）。单位 TFLOPS（INT8/INT4 为 TOPS）。隐藏格式列仅 SM120/121 有硬件路径；SM103 (B300) 工具未实现 tcgen05 路径故 N/A；PRO 5000/5090D v2/GB10 (SM121) 有硬件未测。
 
 | <small>GPU</small> | <small>架构</small> | <small>CC</small> | <small>显存</small> | <small>FP64</small> | <small>FP32</small> | <small>TF32</small> | <small>BF16</small> | <small>BF16<br>mma</small> | <small>FP16</small> | <small>INT8</small> | <small>FP8<br>E4M3</small> | <small>FP8<br>E4M3 mma</small> | <small>NVFP4</small> | <small>INT4</small> | <small>FP4<br>E2M1</small> | <small>FP8<br>E3M4</small> | <small>FP4<br>E0M3</small> |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| <small>B300&nbsp;SXM6&nbsp;AC</small> | <small>SM103</small> | <small>10.3</small> | <small>275G</small> | <small>1.05</small> | <small>68.8</small> | <small>**1101**</small> | <small>**2235**</small> | <small>551</small> | <small>**2235**</small> | <small>151</small> | <small>**4377**</small> | <small>1958</small> | <small>**10441**</small> | <small>74</small> | <small>N/A</small> | <small>N/A</small> | <small>N/A</small> |
+| <small>B300&nbsp;SXM6&nbsp;AC</small> | <small>SM103</small> | <small>10.3</small> | <small>275G</small> | <small>1.0</small> | <small>68.4</small> | <small>276</small> | <small>**2247**</small> | <small>551</small> | <small>551</small> | <small>149</small> | <small>**4439**</small> | <small>1958</small> | <small>**9238**</small> | <small>72</small> | <small>N/A</small> | <small>N/A</small> | <small>N/A</small> |
 | <small>H200&nbsp;NVL</small> | <small>Hopper</small> | <small>9.0</small> | <small>141G</small> | <small>**59.0**</small> | <small>47.3</small> | <small>426</small> | <small>853</small> | <small>—</small> | <small>854</small> | <small>**1630**</small> | <small>1661</small> | <small>—</small> | <small>—</small> | <small>—</small> | <small>—</small> | <small>N/A</small> | <small>N/A</small> |
 | <small>RTX&nbsp;PRO&nbsp;6000&nbsp;SE</small> | <small>SM120</small> | <small>12.0</small> | <small>96G</small> | <small>1.5</small> | <small>**100.3**</small> | <small>222</small> | <small>449</small> | <small>444</small> | <small>444</small> | <small>848</small> | <small>892</small> | <small>887</small> | <small>1590</small> | <small>138</small> | <small>923</small> | <small>**928**</small> | <small>194</small> |
 | <small>RTX&nbsp;5090</small> | <small>SM120</small> | <small>12.0</small> | <small>32G</small> | <small>1.7</small> | <small>83.2</small> | <small>126</small> | <small>241</small> | <small>253</small> | <small>253</small> | <small>886</small> | <small>877</small> | <small>506</small> | <small>**1592**</small> | <small>151</small> | <small>503</small> | <small>504</small> | <small>177</small> |
@@ -51,7 +51,7 @@ gpu-flops-bench/
 > **关键发现**：
 > - **解锁**：4090 解锁后 BF16 mma 181→346（×1.9）、TF32 89→177（×2.0）、E4M3 mma 360→713（×2.0），GEMM 受功率墙只兑现一部分（BF16 178→207）；对照组 INT8/INT4 持平（整数路径无锁）；3090 同机制复现（BF16 mma ×2.0）。输出校验全 PASS
 > - **隐藏格式（E3M4/E0M3，SM120/121 专属）**：E3M4 与 E4M3 同槽（PRO 6000 928 vs 887、5090 504 vs 506、6000D 289 vs 289）——价值在数值（尾数多 1 位，量化误差减半）而非算力；**E0M3（整数值 FP4）让 INT4 权重骑 FP4 快路径：PRO 6000 194 vs INT4 遗留 138（+40%）、5090 177 vs 151（+17%）**。编码发现 [Humming](https://github.com/vllm-project/humming)，测量 [cuda-u](https://github.com/xzwgit/cuda-u) v0.0.3
-> - **SM103 (B300) 双面性**：BF16/FP8/NVFP4 走 tcgen05 极强（2235/4377/10441），但 mma.sync 降档至 25-45%、**INT8=151（cuBLASLt 未 dispatch tcgen05，8-bit 推理应用 E4M3 替代，29×）**、INT4=74 同因
+> - **SM103 (B300) 双面性**：BF16/FP8/NVFP4 走 tcgen05 极强（2247/4439/9238~10441，0.0.3 复测与 2026-10-04 v1 同量级），但 mma.sync 降档至 25-45%、**INT8=151（cuBLASLt 未 dispatch tcgen05，8-bit 推理应用 E4M3 替代，29×）**、INT4=74 同因
 > - **mma/GEMM 比值的架构分代**：SM86/SM89/SM120 ≈1.0（mma.sync 满速），仅数据中心 SM103 把 legacy 路径降档；RTX 6000D 例外（0.83/0.75，出口版限速模式，三台机器独立复现 145-176 区间）
 > - **INT4 快路径的消亡**：Ampere 661（2.2× INT8）→ Ada 1434（2.1×）→ Blackwell 74~151（0.08~0.27×），低比特整数全面让位 FP8/NVFP4/E0M3
 > - H200 FP64=59（数据中心卡独有优势）；PRO 6000 SE D2D 实测 5282 GB/s 为 128MB L2 命中效应（spec 1598）
