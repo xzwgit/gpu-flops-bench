@@ -1,6 +1,6 @@
 # GPU 测试检查清单
 
-> 运行 gpu_flops_test 前查看此清单，确保所有已测 GPU 的数据都更新到 README。
+> 运行 gpu_flops_bench 前查看此清单，确保所有已测 GPU 的数据都更新到 README。
 > 测完新 GPU 后，把结果追加到此清单 + 更新 README 表格。
 
 ## 已测 GPU 总览 (11 款)
@@ -36,7 +36,7 @@
 
 ## 测新 GPU 后的操作步骤 (别漏!)
 
-1. [ ] 拉取结果到本机: `scp -r root@<GPU机>:/root/nv_gpu_flops_test/results/<timestamp> results/`
+1. [ ] 拉取结果到本机: `scp -r root@<GPU机>:/root/gpu_flops_bench/nvidia/results/<timestamp> results/`
 2. [ ] 提取各精度最佳值 (从 report.md)
 3. [ ] **更新 README.md "测试过的 GPU"列表** (加一行)
 4. [ ] **更新 README.md "实测性能数据"** (加一个表格)

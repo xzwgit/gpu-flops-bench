@@ -1,4 +1,4 @@
-# gpu-flops-bench
+# gpu_flops_bench
 
 多厂商 GPU 稠密 GEMM FLOPS 基准测试工具（NVIDIA CUDA + AMD ROCm）
 
@@ -7,7 +7,7 @@
 ## 目录结构
 
 ```
-gpu-flops-bench/
+gpu_flops_bench/
 ├── README.md                          # 本文件（统一对比）
 ├── LICENSE                            # MIT
 ├── run_bench.sh                       # ⭐ 统一入口（自动检测 GPU 厂商）
@@ -88,6 +88,12 @@ bash run_gpu_flops.sh --quick   # 快速模式（每精度只测一个尺寸）
 ```
 
 无需安装 Python。编译时链接 NVML（`-lnvidia-ml`，CUDA Toolkit 自带）。
+
+默认精度列表：`fp64,fp32,tf32,bf16,bf16_mma,fp16,int8,int8_mma,fp8_e4m3,fp8_e4m3_mma,e3m4_mma,e0m3_mma,nvfp4,int4,fp4_e2m1`
+- `_mma` 后缀 = mma.sync 指令级发射率（非 GEMM）
+- **e3m4_mma / e0m3_mma** = 隐藏 Tensor 格式（SM120/121 专属）：PTX/cuBLASLt 无路径，
+  构建期以占位拼写编译 cubin 后做 SASS 位级补丁（`tools/patch_cubin.cpp`，
+  编码发现 [Humming](https://github.com/vllm-project/humming)），运行时经驱动 API 加载。其他架构报 UNSUPPORTED
 
 ### AMD（待实现）
 

@@ -58,11 +58,29 @@ fi
 # （例如 tar 包解压时保留了打包时间戳，源码时间戳不比二进制新，导致换 CUDA
 # 版本或换机器后仍误用旧二进制）。
 # 多卡调度与报告生成已内置进二进制（无需 Python）；NVML 用于遥测采集。
+# 隐藏格式 (FP8 E3M4 / FP4 E0M3): 占位拼写编译 → cubin 位级补丁 → 嵌入
+# (仅 SM120/121 可用; 其他架构运行时报 UNSUPPORTED)
+echo "Building hidden-format cubins (E3M4/E0M3)..."
+g++ -O2 -o "${BUILD_DIR}/patch_cubin" "${ROOT_DIR}/tools/patch_cubin.cpp"
+nvcc -cubin -O3 -gencode=arch=compute_120a,code=sm_120a \
+  "${ROOT_DIR}/src/hidden_mma_kernels.cu" -o "${BUILD_DIR}/hk_120.cubin"
+nvcc -cubin -O3 -gencode=arch=compute_121a,code=sm_121a \
+  "${ROOT_DIR}/src/hidden_mma_kernels.cu" -o "${BUILD_DIR}/hk_121.cubin"
+for v in 120 121; do
+  for m in e3m4 e0m3; do
+    cp "${BUILD_DIR}/hk_${v}.cubin" "${BUILD_DIR}/${m}_${v}.cubin"
+    "${BUILD_DIR}/patch_cubin" "mma_${m}_ab" "${BUILD_DIR}/${m}_${v}.cubin"
+  done
+done
+"${BUILD_DIR}/patch_cubin" --embed "${BUILD_DIR}/hidden_cubins.cpp" \
+  cubin_e3m4_120="${BUILD_DIR}/e3m4_120.cubin" cubin_e0m3_120="${BUILD_DIR}/e0m3_120.cubin" \
+  cubin_e3m4_121="${BUILD_DIR}/e3m4_121.cubin" cubin_e0m3_121="${BUILD_DIR}/e0m3_121.cubin"
+
 echo "Building CUDA benchmark with $(nvcc --version | grep -i release)..."
 nvcc -O3 -std=c++17 -lineinfo \
   "${arch_flags[@]}" \
-  "${SRC_FILE}" \
-  -lcublasLt -lcublas -lnvidia-ml \
+  "${SRC_FILE}" "${BUILD_DIR}/hidden_cubins.cpp" \
+  -lcublasLt -lcublas -lnvidia-ml -lcuda \
   -o "${BIN_FILE}"
 
 exec "${BIN_FILE}" "$@"

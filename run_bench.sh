@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# gpu-flops-bench 统一入口 - 自动检测 GPU 厂商并调用对应工具
+# gpu_flops_bench 统一入口 - 自动检测 GPU 厂商并调用对应工具
 # 用法: bash run_bench.sh [选项]  (选项透传给子工具)
 #   --quant         量化推理吞吐基准 (Humming 引擎, 需 PyTorch+nvcc)
 #   --quick         快速模式

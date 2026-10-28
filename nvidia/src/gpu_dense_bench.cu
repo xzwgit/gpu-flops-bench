@@ -1,5 +1,32 @@
 #include <cuda_runtime.h>
 #include <cublasLt.h>
+#include <cuda.h>
+
+// ---- 隐藏格式 (FP8 E3M4 / FP4 E0M3, SM120/121) ----
+// cuBLASLt/PTX 无路径; 由 run_gpu_flops.sh 在构建期以占位拼写编译、
+// tools/patch_cubin.cpp 位级补丁后经 build/hidden_cubins.cpp 嵌入。
+extern const unsigned char cubin_e3m4_120[]; extern const size_t cubin_e3m4_120_size;
+extern const unsigned char cubin_e0m3_120[]; extern const size_t cubin_e0m3_120_size;
+extern const unsigned char cubin_e3m4_121[]; extern const size_t cubin_e3m4_121_size;
+extern const unsigned char cubin_e0m3_121[]; extern const size_t cubin_e0m3_121_size;
+static CUmodule g_hidden_mod = nullptr;
+static CUfunction g_hidden_e3m4 = nullptr, g_hidden_e0m3 = nullptr;
+static bool g_hidden_tried = false;
+static bool load_hidden_cubins(int device_cc) {
+	if (g_hidden_tried) return g_hidden_e3m4 && g_hidden_e0m3;
+	g_hidden_tried = true;
+	if (cuInit(0) != CUDA_SUCCESS) return false;
+	const unsigned char *e3 = device_cc == 121 ? cubin_e3m4_121 : cubin_e3m4_120;
+	size_t e3n = device_cc == 121 ? cubin_e3m4_121_size : cubin_e3m4_120_size;
+	const unsigned char *e0 = device_cc == 121 ? cubin_e0m3_121 : cubin_e0m3_120;
+	size_t e0n = device_cc == 121 ? cubin_e0m3_121_size : cubin_e0m3_120_size;
+	(void)e3n; (void)e0n;
+	if (cuModuleLoadData(&g_hidden_mod, e3) != CUDA_SUCCESS) return false;
+	if (cuModuleGetFunction(&g_hidden_e3m4, g_hidden_mod, "kFp8E3M4t") != CUDA_SUCCESS) return false;
+	if (cuModuleLoadData(&g_hidden_mod, e0) != CUDA_SUCCESS) return false;
+	if (cuModuleGetFunction(&g_hidden_e0m3, g_hidden_mod, "kFp4E0M3t") != CUDA_SUCCESS) return false;
+	return true;
+}
 #include <cublas_v2.h>
 #include <cuda_bf16.h>
 #include <cuda_fp16.h>
@@ -85,7 +112,7 @@ struct Options {
   bool quick = false;
   std::string output;              // 输出目录；空 = 默认 results/<时间戳>
   std::string precisions =
-      "fp64,fp32,tf32,bf16,bf16_mma,fp16,int8,int8_mma,fp8_e4m3,fp8_e4m3_mma,nvfp4,int4,fp4_e2m1";
+      "fp64,fp32,tf32,bf16,bf16_mma,fp16,int8,int8_mma,fp8_e4m3,fp8_e4m3_mma,e3m4_mma,e0m3_mma,nvfp4,int4,fp4_e2m1";
 };
 
 
@@ -300,6 +327,77 @@ static Result run_mma_benchmark(
   return r;
 }
 
+
+static Result run_mma_benchmark_hidden(
+    const std::string& name, int which /*0=e3m4,1=e0m3*/, int sm_count,
+    double ops_per_thread_per_iter, int device_cc) {
+  Result r;
+  r.precision = name;
+  r.input_type = "MMA_SYNC_PATCHED";
+  r.accumulator_type = "FP32";
+  r.output_type = "FP32";
+  r.unit = "TFLOPS";
+  r.status = "OK";
+  if (device_cc != 120 && device_cc != 121) {
+    r.status = "UNSUPPORTED";
+    std::ostringstream msg;
+    msg << "Hidden formats require SM120/SM121; device is " << device_cc / 10
+        << "." << device_cc % 10;
+    r.validation = msg.str();
+    return r;
+  }
+  if (!load_hidden_cubins(device_cc)) {
+    r.status = "UNSUPPORTED";
+    r.validation = "patched cubin load failed";
+    return r;
+  }
+  CUfunction fn = which == 1 ? g_hidden_e0m3 : g_hidden_e3m4;
+  const int blocks = sm_count * 8;
+  const int threads = 256;
+  float* scratch;
+  if (cudaMalloc(&scratch, blocks * threads * sizeof(float)) != cudaSuccess) {
+    r.status = "ERROR";
+    r.validation = "cudaMalloc failed";
+    return r;
+  }
+  int iters = 200;
+  void* args[] = { &scratch, &iters };
+  cuLaunchKernel(fn, blocks, 1, 1, threads, 1, 1, 0, 0, args, nullptr);
+  cudaDeviceSynchronize();
+  cudaEvent_t ev0, ev1;
+  cudaEventCreate(&ev0);
+  cudaEventCreate(&ev1);
+  float ms = 0;
+  for (int attempt = 0; attempt < 3; attempt++) {
+    cudaEventRecord(ev0);
+    cuLaunchKernel(fn, blocks, 1, 1, threads, 1, 1, 0, 0, args, nullptr);
+    cudaEventRecord(ev1);
+    cudaEventSynchronize(ev1);
+    cudaEventElapsedTime(&ms, ev0, ev1);
+    if (ms >= 60.f) break;
+    double scaled = (double)iters * (180.f / (ms > 0.1f ? ms : 0.1f));
+    iters = scaled > 2000000 ? 2000000 : (int)scaled;
+  }
+  double best = 0;
+  for (int rep = 0; rep < 3; rep++) {
+    cudaEventRecord(ev0);
+    cuLaunchKernel(fn, blocks, 1, 1, threads, 1, 1, 0, 0, args, nullptr);
+    cudaEventRecord(ev1);
+    cudaEventSynchronize(ev1);
+    cudaEventElapsedTime(&ms, ev0, ev1);
+    double ops = (double)blocks * threads * ops_per_thread_per_iter * iters;
+    double rate = ops / (ms / 1e3);
+    if (rate > best) best = rate;
+  }
+  cudaEventDestroy(ev0);
+  cudaEventDestroy(ev1);
+  cudaFree(scratch);
+  r.throughput = best / 1e12;
+  r.best = true;
+  r.m = r.n = r.k = 0;
+  r.validation = "OK";
+  return r;
+}
 
 // 单卡完整报告：对应 Python run_one() 返回的字典。device 信息与 results 分离，
 // 与 Python best_rows() 的增强逻辑（从 device 取 name/compute_capability）对齐。
@@ -2139,6 +2237,20 @@ DeviceReport run_device(int device_id, const Options& options) {
 #else
       results.push_back(unsupported_result(requested, "Not compiled for this arch"));
 #endif
+      continue;
+    }
+    if (requested == "e3m4_mma") {
+      // FP8 E3M4: m16n8k32, KUNROLL=16 → 每线程每次外层 16*8192/32
+      results.push_back(run_mma_benchmark_hidden(
+          "e3m4_mma", 0, properties.multiProcessorCount,
+          16.0 * (8192.0 / 32), compute_capability));
+      continue;
+    }
+    if (requested == "e0m3_mma") {
+      // FP4 E0M3: m16n8k64 块缩放 (scale_vec::4X), 16*16384/32
+      results.push_back(run_mma_benchmark_hidden(
+          "e0m3_mma", 1, properties.multiProcessorCount,
+          16.0 * (16384.0 / 32), compute_capability));
       continue;
     }
     if (requested == "fp4_e2m1") {
