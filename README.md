@@ -70,6 +70,28 @@ gpu-flops-bench/
 > - **RTX 4090（SM89，128 SM，8 卡一致性 ±1.7%）**：mma/GEMM 比值 BF16 1.02（181/178）、FP8 1.02（360/352）——**Ada 与 Ampere/SM120 同属"mma.sync 满速"阵营，四代里只有数据中心 SM103 把 legacy 路径降档**。**INT4 mma = 1434 TOPS ≈ 2.1× 其 INT8（672）**——Ada 延续 4-bit 传统 2× 收益，至此三代对照完整：Ampere 661（2.2×）/Ada 1434（2.1×）/**Blackwell 74~235（0.08~0.27×，INT4 mma 快路径在 Blackwell 上被砍掉两个数量级，低比特整数全面让位 FP8/NVFP4）**。NVFP4/FP4 E2M1 在 SM89 均无路径（N/A）
 > - INT8 F32acc（混合精度）在 B300 上仅 40 TOPS，比 INT32I 还差——证实不是计算类型问题，是 INT8 整体无 tcgen05 路径
 
+### 表4：隐藏 Tensor 格式（FP8 E3M4 / FP4 E0M3，2026-10-27）
+
+> 表2 格式 + 两列隐藏格式。E3M4/E0M3 为 Blackwell (SM120/121) Tensor 硬件真实支持、但 PTX 类型系统不存在的格式，无法经 cuBLASLt 或标准 mma.sync 拼写到达——数值来自 cuda-u v0.0.3 的 cubin 位级补丁路径（mma 发射率口径）。RTX 5090 为新测行（mma 列 = cuda-u 0.0.3 实测，GEMM 列沿用表1）。
+
+| <small>GPU</small> | <small>架构</small> | <small>CC</small> | <small>显存</small> | <small>FP64</small> | <small>FP32</small> | <small>TF32</small> | <small>BF16</small> | <small>BF16<br>mma</small> | <small>FP16</small> | <small>INT8</small> | <small>FP8<br>E4M3</small> | <small>FP8<br>E4M3 mma</small> | <small>NVFP4</small> | <small>INT4</small> | <small>FP4<br>E2M1</small> | <small>FP8<br>E3M4</small> | <small>FP4<br>E0M3</small> |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| <small>B300&nbsp;SXM6&nbsp;AC</small> | <small>SM103</small> | <small>10.3</small> | <small>275G</small> | <small>1.05</small> | <small>68.8</small> | <small>**1101**</small> | <small>**2235**</small> | <small>551</small> | <small>**2235**</small> | <small>151</small> | <small>**4377**</small> | <small>1958</small> | <small>**10441**</small> | <small>74</small> | <small>N/A</small> | <small>N/A</small> | <small>N/A</small> |
+| <small>RTX&nbsp;PRO&nbsp;6000</small> | <small>SM120</small> | <small>12.0</small> | <small>96G</small> | <small>1.53</small> | <small>80.6</small> | <small>225</small> | <small>**457**</small> | <small>462</small> | <small>457</small> | <small>882</small> | <small>**906**</small> | <small>924</small> | <small>**1619**</small> | <small>235</small> | <small>924</small> | <small>—</small> | <small>—</small> |
+| <small>RTX&nbsp;5090</small> | <small>SM120</small> | <small>12.0</small> | <small>32G</small> | <small>1.8</small> | <small>83.2</small> | <small>126</small> | <small>254</small> | <small>253</small> | <small>254</small> | <small>906</small> | <small>774</small> | <small>506</small> | <small>**1617**</small> | <small>151</small> | <small>503</small> | <small>504</small> | <small>177</small> |
+| <small>RTX&nbsp;6000D</small> | <small>SM120</small> | <small>12.0</small> | <small>84G</small> | <small>1.28</small> | <small>66.7</small> | <small>72</small> | <small>**176**</small> | <small>146</small> | <small>144</small> | <small>472</small> | <small>**386**</small> | <small>291</small> | <small>**947**</small> | <small>141</small> | <small>379</small> | <small>289</small> | <small>141</small> |
+| <small>RTX&nbsp;4090</small> | <small>SM89</small> | <small>8.9</small> | <small>24G</small> | <small>1.25</small> | <small>57.2</small> | <small>89</small> | <small>**178**</small> | <small>181</small> | <small>175</small> | <small>672</small> | <small>**352**</small> | <small>360</small> | <small>N/A</small> | <small>1434</small> | <small>N/A</small> | <small>N/A</small> | <small>N/A</small> |
+| <small>RTX&nbsp;3090</small> | <small>SM86</small> | <small>8.6</small> | <small>24G</small> | <small>0.57</small> | <small>30.1</small> | <small>41</small> | <small>**83**</small> | <small>83</small> | <small>83</small> | <small>307</small> | <small>N/A</small> | <small>N/A</small> | <small>N/A</small> | <small>661</small> | <small>N/A</small> | <small>N/A</small> | <small>N/A</small> |
+
+> 单位: TFLOPS（INT8/INT4 为 TOPS）。E3M4/E0M3 列 = mma 发射率（cubin 补丁路径）。
+>
+> **发现与口径**：
+> - **E3M4 与 E4M3 同槽同速率**：6000D 289 vs 291（mma）、5090 504 vs 506——隐藏格式拿到的是新数值编码而非新算力。E3M4 多 1 位尾数（相对精度 3.1% vs 6.25%），量化误差减半但动态范围窄（±31 vs ±448）
+> - **E0M3 = 整数值语义的 FP4**（≈对称 INT4 的浮点编码）：可让 INT4 量化权重骑上 FP4 原生路径——6000D 上 141 vs INT4 遗留路径 141 持平，但 5090 上 177 vs INT4 的 151 高 17%；对照 FP4 E2M1 mma（6000D 379）仍是 block-scale 开销减半档
+> - **仅 SM120/121 可达**：SM89/SM86 无此硬件；SM103 (B300) 按 Humming 文章有 tcgen05 描述符路径但 cuda-u 未实现，暂 N/A
+> - PRO 6000 的 — 为未测（本轮测试窗口机器不可达），mma 侧预期与 6000D 同源（同为 SM120 满血）
+> - 路线与编码发现：[Humming](https://github.com/vllm-project/humming)（Apache-2.0）；测量工具：[cuda-u](https://github.com/xzwgit/cuda-u) v0.0.3（2026-10-27，6000D@10.10.3.157 / 5090@10.0.1.116 / 4090@10.0.1.92 解锁态）
+
 ### Tensor 发射限速解锁（RTX 4090 48G · RTX 3090，2026-10-25）
 
 > 测试机：8 × RTX 4090 48G（改装，10de:2684，驱动 595.71.05，CUDA 13.2），
